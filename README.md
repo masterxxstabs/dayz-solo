@@ -581,8 +581,7 @@ powershell -ExecutionPolicy Bypass -File tools\sign_mod.ps1
 
 ## Notes
 
-- This never touches official servers. Your private server runs without BattlEye by default:
-  with many mods the game can be busy loading for over a minute, and BattlEye then kicks you
-  for "Client not responding". Tick "Use BattlEye" in Settings to start the server with it and
-  the game through `DayZ_BE.exe`, like the official DayZ Launcher does. Nothing is patched.
+- This never touches official servers. The DayZ server always runs BattlEye (it ignores
+  `BattlEye = 0`), so the game is started through `DayZ_BE.exe` exactly like the official
+  DayZ Launcher does it. Nothing is patched or disabled.
 - Steam must be running and you must own DayZ.

@@ -135,18 +135,11 @@ function Sync-SettingsFile([string]$Path, [string]$DefaultsPath) {
         return "$Path is not valid JSON ($($_.Exception.Message)); fix it or delete it to start from the defaults."
     }
     if (-not ($current -is [System.Management.Automation.PSCustomObject])) { return '' }
-    $notes = @()
-    # Settings from before revision 2 had BattlEye on, which kicks you ("Client not responding")
-    # while a heavily modded game is still loading. Turned off once; the checkbox brings it back.
-    if ($current.PSObject.Properties['useBattlEye'] -and -not $current.PSObject.Properties['settingsRevision'] -and $current.useBattlEye -eq $true) {
-        $current.useBattlEye = $false
-        $notes += 'BattlEye is now off for your private server (it kicked players while modded games loaded); turn it back on in Settings if you want it.'
-    }
-    if (-not (Merge-MissingSettings $current $defaults) -and -not $notes.Count) { return '' }
+    if (-not (Merge-MissingSettings $current $defaults)) { return '' }
     $escape = [string][char]92 + 'u00'
     $json = (ConvertTo-Json $current -Depth 30).Replace($escape + '27', "'").Replace($escape + '3c', '<').Replace($escape + '3e', '>').Replace($escape + '26', '&')
     [IO.File]::WriteAllText($Path, $json, (New-Object System.Text.UTF8Encoding $false))
-    return ((@("Added new options to $Path (your own values are unchanged).") + $notes) -join ' ')
+    return "Added new options to $Path (your own values are unchanged)."
 }
 
 function Get-LauncherSetting([string]$Name, $Default) {

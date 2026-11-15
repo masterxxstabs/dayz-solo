@@ -196,18 +196,11 @@ function Sync-SettingsFile([string]$Path, [string]$DefaultsPath) {
         return "$Path is not valid JSON ($($_.Exception.Message)); fix it or delete it to start from the defaults."
     }
     if (-not ($current -is [System.Management.Automation.PSCustomObject])) { return '' }
-    $notes = @()
-    # Settings from before revision 2 had BattlEye on, which kicks you ("Client not responding")
-    # while a heavily modded game is still loading. Turned off once; the checkbox brings it back.
-    if ($current.PSObject.Properties['useBattlEye'] -and -not $current.PSObject.Properties['settingsRevision'] -and $current.useBattlEye -eq $true) {
-        $current.useBattlEye = $false
-        $notes += 'BattlEye is now off for your private server (it kicked players while modded games loaded); turn it back on in Settings if you want it.'
-    }
-    if (-not (Merge-MissingSettings $current $defaults) -and -not $notes.Count) { return '' }
+    if (-not (Merge-MissingSettings $current $defaults)) { return '' }
     $escape = [string][char]92 + 'u00'
     $json = (ConvertTo-Json $current -Depth 30).Replace($escape + '27', "'").Replace($escape + '3c', '<').Replace($escape + '3e', '>').Replace($escape + '26', '&')
     [IO.File]::WriteAllText($Path, $json, (New-Object System.Text.UTF8Encoding $false))
-    return ((@("Added new options to $Path (your own values are unchanged).") + $notes) -join ' ')
+    return "Added new options to $Path (your own values are unchanged)."
 }
 
 function Read-LauncherConfig([string]$Path) {
@@ -228,7 +221,6 @@ function Read-LauncherConfig([string]$Path) {
         modLoot                      = $null
         modUpdates                   = $null
         verifySignatures             = $true
-        useBattlEye                  = $false
         lootMultiplier               = 1
         lootCategoryMultipliers      = $null
         lootVariety                  = $true
@@ -563,7 +555,7 @@ loginQueueConcurrentPlayers = $slots;
 loginQueueMaxPlayers = $slots;
 instanceId = 1;
 storageAutoFix = 1;
-BattlEye = $(ConvertTo-CfgFlag $Cfg.useBattlEye);
+BattlEye = 1;
 
 class Missions
 {
@@ -3499,8 +3491,14 @@ if ($clientModArgs.Count) { $clientArgs += "`"-mod=$($clientModArgs -join ';')`"
 if ($cfg.extraClientArgs) { $clientArgs += $cfg.extraClientArgs }
 
 $clientExe = Join-Path $clientDir "$CLIENT_PROCESS.exe"
+# The DayZ server always runs BattlEye (BattlEye = 0 is ignored), and a game started without it
+# is kicked for "Client not responding" about a minute in, so the game starts through DayZ_BE.exe.
 $battlEyeLauncher = Join-Path $clientDir $CLIENT_BATTLEYE_LAUNCHER
-if ($cfg.useBattlEye -and (Test-Path -LiteralPath $battlEyeLauncher)) {
+if (-not (Test-Path -LiteralPath $battlEyeLauncher)) {
+    Write-Warn "$CLIENT_BATTLEYE_LAUNCHER is missing from $clientDir, so the game starts without BattlEye and the server will kick you. Verify DayZ's files in Steam."
+}
+else {
+    Write-Info "The game starts through $CLIENT_BATTLEYE_LAUNCHER (your server runs BattlEye)"
     $clientExe = $battlEyeLauncher
     $clientArgs = @('-exe', "$CLIENT_PROCESS.exe") + $clientArgs
 }

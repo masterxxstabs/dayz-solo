@@ -102,18 +102,6 @@ $short = Format-ShortList @(1..30 | ForEach-Object { "Car$_" }) 6
 if ($short -eq 'Car1, Car2, Car3, Car4, Car5, Car6 and 24 more') { Pass 'long lists are shortened' } else { Fail "Format-ShortList: $short" }
 if ((Format-ShortList @('A', 'B') 6) -eq 'A, B') { Pass 'short lists stay whole' } else { Fail 'short list changed' }
 
-# Old settings get BattlEye turned off once; a later choice is kept
-$defaultsFile = Join-Path $ROOT 'config\defaults\launcher.json'
-$oldSettings = Join-Path $work 'launcher.json'
-New-TextFile $oldSettings '{ "map": "chernarusplus", "useBattlEye": true }'
-$message = Sync-SettingsFile $oldSettings $defaultsFile
-$after = [IO.File]::ReadAllText($oldSettings) | ConvertFrom-Json
-if ($after.useBattlEye -eq $false -and $after.settingsRevision -eq 2 -and $message -match 'BattlEye') { Pass 'old settings: BattlEye turned off once' } else { Fail "BattlEye migration: $message" }
-$after.useBattlEye = $true
-[IO.File]::WriteAllText($oldSettings, ($after | ConvertTo-Json -Depth 30))
-[void](Sync-SettingsFile $oldSettings $defaultsFile)
-if (([IO.File]::ReadAllText($oldSettings) | ConvertFrom-Json).useBattlEye -eq $true) { Pass 'BattlEye turned back on stays on' } else { Fail 'BattlEye choice overwritten' }
-
 Remove-Item -LiteralPath $link -Force -ErrorAction SilentlyContinue
 if ($failures.Count) {
     Write-Host "$($failures.Count) launcher function check(s) failed" -ForegroundColor Red

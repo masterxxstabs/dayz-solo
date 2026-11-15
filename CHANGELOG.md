@@ -2,11 +2,16 @@
 
 Each `## version` section becomes the release notes the app shows under "What's new".
 
+## 1.1.3
+
+- BattlEye is back on, and the "Use BattlEye" option is gone. The DayZ server runs BattlEye
+  whatever its settings say, so 1.1.2 started the game without it and the server kicked you
+  for "Client not responding" about a minute in. The game always starts through DayZ_BE.exe
+  again.
+
 ## 1.1.2
 
-- BattlEye is now off by default for your private server. It kicked you with "Client not
-  responding" while a game with many mods was still loading. Existing settings are switched
-  once; tick "Use BattlEye" in Settings to have it back.
+- BattlEye off by default (undone in 1.1.3: the server keeps BattlEye on regardless).
 - Fixed "Couldn't add the mods' loot files" at every start: mods' own loot (like QoL Mining's
   rig parts) is now added.
 - Fixed the trader setup: DayZ Solo could copy another mod's item list instead of the Trader
