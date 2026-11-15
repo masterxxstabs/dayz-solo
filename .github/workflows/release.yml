@@ -56,6 +56,11 @@ jobs:
           & $iscc "/DAppVersion=$env:VERSION" "/O$PWD\dist" installer\DayZSolo.iss
           if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed ($LASTEXITCODE)." }
 
+      - name: Test the installer
+        if: env.ALREADY_PUBLISHED != '1'
+        shell: powershell
+        run: .\tools\test-installer.ps1 -Setup "dist\DayZSolo-Setup-$env:VERSION.exe" -Version $env:VERSION
+
       - name: Checksums and notes
         if: env.ALREADY_PUBLISHED != '1'
         shell: powershell

@@ -1,0 +1,35 @@
+name: Test published installer
+
+# Downloads the installer of the latest (or a given) release and runs tools/test-installer.ps1
+# against it: silent install, files, shortcut, app start, uninstall.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to test (empty = latest)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  install:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Download the installer
+        shell: powershell
+        run: |
+          $tag = '${{ inputs.tag }}'
+          if (-not $tag) { $tag = (gh release view --repo "${{ github.repository }}" --json tagName --jq .tagName) }
+          gh release download $tag --repo "${{ github.repository }}" --pattern 'DayZSolo-Setup-*.exe' --dir downloaded
+          Add-Content -Path $env:GITHUB_ENV -Value "TAG=$tag" -Encoding ascii
+      - name: Install, check, uninstall
+        shell: powershell
+        run: |
+          $setup = Get-ChildItem downloaded -Filter 'DayZSolo-Setup-*.exe' | Select-Object -First 1
+          .\tools\test-installer.ps1 -Setup $setup.FullName -Version $env:TAG.TrimStart('v')
