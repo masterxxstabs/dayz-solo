@@ -1,12 +1,17 @@
 name: Test published installer
 
-# Downloads the installer of the latest (or a given) release and runs tools/test-installer.ps1
-# against it: silent install, files, shortcut, app start, uninstall.
+# Downloads a release's installer and runs tools/test-installer.ps1 against it (silent install,
+# files, shortcut, app start, uninstall). With "from", it also installs that older release and
+# lets its app update itself to this one (tools/test-update.ps1).
 on:
   workflow_dispatch:
     inputs:
       tag:
         description: 'Release tag to test (empty = latest)'
+        required: false
+        default: ''
+      from:
+        description: 'Older release tag to update from, e.g. v1.1.0 (empty = skip)'
         required: false
         default: ''
 
@@ -16,20 +21,28 @@ permissions:
 jobs:
   install:
     runs-on: windows-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v5
-      - name: Download the installer
+      - name: Download the installers
         shell: powershell
         run: |
           $tag = '${{ inputs.tag }}'
           if (-not $tag) { $tag = (gh release view --repo "${{ github.repository }}" --json tagName --jq .tagName) }
           gh release download $tag --repo "${{ github.repository }}" --pattern 'DayZSolo-Setup-*.exe' --dir downloaded
           Add-Content -Path $env:GITHUB_ENV -Value "TAG=$tag" -Encoding ascii
+          $from = '${{ inputs.from }}'
+          if ($from) { gh release download $from --repo "${{ github.repository }}" --pattern 'DayZSolo-Setup-*.exe' --dir from }
       - name: Install, check, uninstall
         shell: powershell
         run: |
           $setup = Get-ChildItem downloaded -Filter 'DayZSolo-Setup-*.exe' | Select-Object -First 1
           .\tools\test-installer.ps1 -Setup $setup.FullName -Version $env:TAG.TrimStart('v')
+      - name: Update from an older release
+        if: inputs.from != ''
+        shell: powershell
+        run: |
+          $setup = Get-ChildItem from -Filter 'DayZSolo-Setup-*.exe' | Select-Object -First 1
+          .\tools\test-update.ps1 -FromSetup $setup.FullName -FromVersion '${{ inputs.from }}'.TrimStart('v') -ToVersion $env:TAG.TrimStart('v')

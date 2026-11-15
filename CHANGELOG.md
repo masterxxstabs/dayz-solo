@@ -2,6 +2,11 @@
 
 Each `## version` section becomes the release notes the app shows under "What's new".
 
+## 1.1.1
+
+- Fixed the Start menu and desktop shortcuts from the 1.1.0 installer, which pointed at a
+  PowerShell path Windows Explorer can't open. Updating from 1.1.0 repairs them.
+
 ## 1.1.0
 
 - **Installer and automatic updates.** Install DayZ Solo with `DayZSolo-Setup.exe` (no admin

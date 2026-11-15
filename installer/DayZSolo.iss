@@ -7,7 +7,9 @@
 #endif
 #define AppName "DayZ Solo"
 #define Repo "https://github.com/masterxxstabs/dayz-solo"
-#define PowerShell "{sysnative}\WindowsPowerShell\v1.0\powershell.exe"
+; 64-bit install mode makes {sys} the real System32, so the shortcuts start 64-bit PowerShell
+; (steam_api64.dll needs it). {sysnative} only exists for 32-bit programs, not for Explorer.
+#define PowerShell "{sys}\WindowsPowerShell\v1.0\powershell.exe"
 
 [Setup]
 AppId={{7CBDBF28-3850-443F-ACFF-FA7510850BA1}
@@ -20,6 +22,8 @@ AppSupportURL={#Repo}/issues
 AppUpdatesURL={#Repo}/releases
 VersionInfoVersion={#AppVersion}
 PrivilegesRequired=lowest
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 DefaultDirName={autopf}\DayZ Solo
 DisableProgramGroupPage=yes
 DisableReadyPage=yes
