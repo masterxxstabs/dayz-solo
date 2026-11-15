@@ -761,7 +761,8 @@ if ($Action -eq 'resubscribe') {
         Start-Sleep -Seconds 2
     }
     foreach ($entry in $script:Items) {
-        foreach ($folder in Get-ContentFolders $entry.id) { Remove-ContentFolder $folder $entry.id }
+        $folders = Get-ContentFolders $entry.id
+        foreach ($folder in $folders) { Remove-ContentFolder $folder $entry.id }
     }
 
     $steam = Open-Steam

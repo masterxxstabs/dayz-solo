@@ -43,7 +43,7 @@ RestartApplications=no
 Name: "desktopicon"; Description: "Create a desktop shortcut"
 
 [Files]
-Source: "..\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "\.git,\.github,\.gitattributes,\.gitignore,\installer,\dist,\signing,*.biprivatekey,\config\launcher.json,\config\SoloSurvivor.json,\config\app-ui.json,\config\.logs,\config\.cache,\config\.app-token,\config\.session.json,\config\.join.json,\config\.coop-password,\config\Trader"
+Source: "..\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "\.git,\.github,\.gitattributes,\.gitignore,\installer,\dist,\signing,*.biprivatekey,\config\launcher.json,\config\SoloSurvivor.json,\config\app-ui.json,\config\.logs,\config\.cache,\config\.app-token,\config\.session.json,\config\.join.json,\config\.coop-password,\config\Trader,\config\Trader.old-*,\config\trader-mod-items.txt,\config\modded-vehicles.txt"
 
 [Icons]
 Name: "{autoprograms}\{#AppName}"; Filename: "{#PowerShell}"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\app\DayZSoloApp.ps1"""; WorkingDir: "{app}"; IconFilename: "{app}\app\dayzsolo.ico"; Comment: "Single-player and co-op DayZ"

@@ -2,6 +2,22 @@
 
 Each `## version` section becomes the release notes the app shows under "What's new".
 
+## 1.1.2
+
+- BattlEye is now off by default for your private server. It kicked you with "Client not
+  responding" while a game with many mods was still loading. Existing settings are switched
+  once; tick "Use BattlEye" in Settings to have it back.
+- Fixed "Couldn't add the mods' loot files" at every start: mods' own loot (like QoL Mining's
+  rig parts) is now added.
+- Fixed the trader setup: DayZ Solo could copy another mod's item list instead of the Trader
+  mod's example, which left the NPC trader without a proper setup. A wrong copy is replaced
+  automatically (the old one is kept as config\Trader.old-...).
+- Workshop mods DayZ still lists but that aren't downloaded are now one line in the log, and
+  they show on the Mods tab with a Download button.
+- Shorter launcher log: the modded car list is summarised (full list in
+  config\modded-vehicles.txt).
+- Fixed Resubscribe failing after Steam had already removed the mod's files.
+
 ## 1.1.1
 
 - Fixed the Start menu and desktop shortcuts from the 1.1.0 installer, which pointed at a

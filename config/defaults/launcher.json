@@ -1,4 +1,5 @@
 {
+    "settingsRevision": 2,
     "map": "enoch",
     "playerName": "Survivor",
     "stopServerWhenGameCloses": true,
@@ -15,7 +16,7 @@
     ],
     "loadLocalModFolders": true,
     "verifySignatures": true,
-    "useBattlEye": true,
+    "useBattlEye": false,
     "lootMultiplier": 5,
     "lootCategoryMultipliers": {
         "food": 2

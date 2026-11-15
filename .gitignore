@@ -5,6 +5,8 @@ config/app-ui.json
 config/.*
 config/Trader/
 config/trader-mod-items.txt
+config/modded-vehicles.txt
+config/Trader.old-*/
 
 # Private signing key and build output
 signing/

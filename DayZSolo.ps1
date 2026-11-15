@@ -196,11 +196,18 @@ function Sync-SettingsFile([string]$Path, [string]$DefaultsPath) {
         return "$Path is not valid JSON ($($_.Exception.Message)); fix it or delete it to start from the defaults."
     }
     if (-not ($current -is [System.Management.Automation.PSCustomObject])) { return '' }
-    if (-not (Merge-MissingSettings $current $defaults)) { return '' }
+    $notes = @()
+    # Settings from before revision 2 had BattlEye on, which kicks you ("Client not responding")
+    # while a heavily modded game is still loading. Turned off once; the checkbox brings it back.
+    if ($current.PSObject.Properties['useBattlEye'] -and -not $current.PSObject.Properties['settingsRevision'] -and $current.useBattlEye -eq $true) {
+        $current.useBattlEye = $false
+        $notes += 'BattlEye is now off for your private server (it kicked players while modded games loaded); turn it back on in Settings if you want it.'
+    }
+    if (-not (Merge-MissingSettings $current $defaults) -and -not $notes.Count) { return '' }
     $escape = [string][char]92 + 'u00'
     $json = (ConvertTo-Json $current -Depth 30).Replace($escape + '27', "'").Replace($escape + '3c', '<').Replace($escape + '3e', '>').Replace($escape + '26', '&')
     [IO.File]::WriteAllText($Path, $json, (New-Object System.Text.UTF8Encoding $false))
-    return "Added new options to $Path (your own values are unchanged)."
+    return ((@("Added new options to $Path (your own values are unchanged).") + $notes) -join ' ')
 }
 
 function Read-LauncherConfig([string]$Path) {
@@ -221,7 +228,7 @@ function Read-LauncherConfig([string]$Path) {
         modLoot                      = $null
         modUpdates                   = $null
         verifySignatures             = $true
-        useBattlEye                  = $true
+        useBattlEye                  = $false
         lootMultiplier               = 1
         lootCategoryMultipliers      = $null
         lootVariety                  = $true
@@ -331,9 +338,23 @@ function Get-WorkshopRoots([string[]]$Libraries) {
     return , $roots.ToArray()
 }
 
+# DayZ's own launcher keeps links to Workshop folders in DayZ\!Workshop; the link target holds the ID.
+function Get-LinkedWorkshopId([string]$LinkPath) {
+    try {
+        $target = @((Get-Item -LiteralPath $LinkPath -Force).Target) | Select-Object -First 1
+        if ($target) {
+            $id = Get-WorkshopIdFromPath ([string]$target)
+            if ($id) { return $id }
+        }
+    }
+    catch { }
+    return '-'
+}
+
 function Get-WorkshopMods([string[]]$Libraries) {
     $seen = New-Object 'System.Collections.Generic.HashSet[string]' ([StringComparer]::OrdinalIgnoreCase)
-    foreach ($root in Get-WorkshopRoots $Libraries) {
+    $roots = Get-WorkshopRoots $Libraries
+    foreach ($root in $roots) {
         foreach ($dir in Get-ChildItem -LiteralPath $root -Directory) {
             $name = Get-ModDisplayName $dir.FullName
             if ($seen.Add((ConvertTo-LinkName $name))) {
@@ -346,7 +367,7 @@ function Get-WorkshopMods([string[]]$Libraries) {
         if (Test-Path -LiteralPath $launcherLinks) {
             foreach ($dir in Get-ChildItem -LiteralPath $launcherLinks -Directory -Filter '@*') {
                 if ($seen.Add((ConvertTo-LinkName $dir.Name))) {
-                    [pscustomobject]@{ Id = '-'; Name = $dir.Name; Path = $dir.FullName }
+                    [pscustomobject]@{ Id = (Get-LinkedWorkshopId $dir.FullName); Name = $dir.Name; Path = $dir.FullName }
                 }
             }
         }
@@ -606,15 +627,38 @@ function Restore-ServerBattlEye([string]$ServerDir) {
     }
 }
 
+function Test-TraderConfig([string]$Path) {
+    if (-not (Test-Path -LiteralPath $Path)) { return $false }
+    $text = [IO.File]::ReadAllText($Path)
+    return [bool](($text -match '(?im)^\s*<Trader>') -and ($text -match '(?im)^\s*<Category>'))
+}
+
+# The Trader mod's own example comes first; other mods often ship a TraderConfig.txt snippet
+# that only lists their items, which the Trader mod can't run on.
+function Find-TraderSample($ClientMods) {
+    $mods = @($ClientMods | Where-Object { $_ })
+    $ordered = @($mods | Where-Object { $_.LinkName -match '(?i)^@Trader$' }) + @($mods | Where-Object { $_.LinkName -notmatch '(?i)^@Trader$' })
+    foreach ($mod in $ordered) {
+        foreach ($file in Get-ChildItem -LiteralPath $mod.Path -Recurse -Filter 'TraderConfig.txt' -File -ErrorAction SilentlyContinue) {
+            if (Test-TraderConfig $file.FullName) { return $file }
+        }
+    }
+    return $null
+}
+
 function Install-TraderProfile($Cfg, $ClientMods, [string]$ClientDir, [string]$ProfilesDir) {
     $userDir = Join-Path $SCRIPT_DIR 'config\Trader'
-    if (-not (Test-Path -LiteralPath $userDir)) {
-        $sample = $null
-        foreach ($mod in $ClientMods) {
-            $sample = Get-ChildItem -LiteralPath $mod.Path -Recurse -Filter 'TraderConfig.txt' -File -ErrorAction SilentlyContinue |
-                Select-Object -First 1
-            if ($sample) { break }
+    $userConfig = Join-Path $userDir 'TraderConfig.txt'
+    if ((Test-Path -LiteralPath $userConfig) -and -not (Test-TraderConfig $userConfig)) {
+        $sample = Find-TraderSample $ClientMods
+        if ($sample) {
+            $backup = "$userDir.old-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+            Move-Item -LiteralPath $userDir -Destination $backup
+            Write-Warn "config\Trader held another mod's item list, not a Trader setup. Replaced it with the Trader mod's example; the old copy is in $backup"
         }
+    }
+    if (-not (Test-Path -LiteralPath $userDir)) {
+        $sample = Find-TraderSample $ClientMods
         if (-not $sample) { return }
         Copy-Item -LiteralPath $sample.DirectoryName -Destination $userDir -Recurse
         Write-Step "Created your trader setup in $userDir (from the Trader mod's example)"
@@ -1115,12 +1159,16 @@ function Add-ModdedVehicles($Cfg, $ClientMods, [string]$ClientDir, [string]$Miss
     $summary = @()
     if ($cars.Count) { $summary += "$($cars.Count) car(s)" }
     if ($boats.Count) { $summary += "$($boats.Count) boat(s)" }
-    Write-Step "Modded vehicles added to the spawns: $($summary -join ', ') - $((@($cars) + @($boats)) -join ', ')"
+    $vehicleReport = Join-Path $SCRIPT_DIR 'config\modded-vehicles.txt'
+    $reportLines = @("Modded vehicles added to the spawns on $(Get-Date -Format 'yyyy-MM-dd HH:mm').", '', 'Spawning:') + @(@($cars) + @($boats)) +
+        @('', 'Parts setup built by DayZ Solo:') + @($generatedParts) + @('', 'No parts found:') + @($noParts)
+    try { [IO.File]::WriteAllLines($vehicleReport, [string[]]$reportLines) } catch { }
+    Write-Step "Modded vehicles added to the spawns: $($summary -join ', ') - $(Format-ShortList (@($cars) + @($boats)) 6) (full list: config\modded-vehicles.txt)"
     if ($generatedParts.Count) {
-        Write-Info "Built a parts setup for: $($generatedParts -join ', ') (each part spawns with $([math]::Round($partChance * 100))% chance)"
+        Write-Info "Built a parts setup for $($generatedParts.Count) of them (each part spawns with $([math]::Round($partChance * 100))% chance)"
     }
     if ($noParts.Count) {
-        Write-Warn "No parts setup (cfgspawnabletypes) found for: $($noParts -join ', ') - these spawn without wheels or parts."
+        Write-Warn "No parts setup (cfgspawnabletypes) found for: $(Format-ShortList $noParts 10) - these spawn without wheels or parts."
         Write-Warn '  Check the car mod''s Workshop page or files for a cfgspawnabletypes.xml snippet.'
     }
 }
@@ -1231,7 +1279,8 @@ function Find-BanditLoadout([string]$ProfilesDir, $Bandits) {
         $military = Install-BanditLoadout $ProfilesDir $Bandits
         if ($military) { return $military }
     }
-    $bandit = Get-ExpansionLoadouts $ProfilesDir | Where-Object { $_.BaseName -match '(?i)bandit|raider' } | Select-Object -First 1
+    $loadouts = Get-ExpansionLoadouts $ProfilesDir
+    $bandit = $loadouts | Where-Object { $_.BaseName -match '(?i)bandit|raider' } | Select-Object -First 1
     if ($bandit) { return $bandit.BaseName }
     return 'HumanLoadout'
 }
@@ -1772,7 +1821,8 @@ function Install-ModLoot($Cfg, $Mods, [string]$MissionDir) {
     $blocks = @()
     foreach ($mod in @($Mods)) {
         if (-not $mod) { continue }
-        foreach ($folder in Get-ModLootFolders $mod) {
+        $folders = Get-ModLootFolders $mod
+        foreach ($folder in $folders) {
             if ($excluded -contains $folder.Name.ToLower()) { continue }
             $target = Join-Path $MissionDir $folder.Name
             $marker = Join-Path $target $MOD_LOOT_MARKER
@@ -2001,7 +2051,8 @@ function Resolve-InviteMod($Entry, [string[]]$Libraries, [string]$ClientDir) {
         if ($builtin) { return $builtin }
     }
     if ($id -match '^\d+$') {
-        foreach ($root in Get-WorkshopRoots $Libraries) {
+        $roots = Get-WorkshopRoots $Libraries
+        foreach ($root in $roots) {
             $dir = Join-Path $root $id
             if (Test-Path -LiteralPath (Join-Path $dir 'Addons')) {
                 return [pscustomobject]@{ Path = $dir; LinkName = ConvertTo-LinkName $name }
@@ -2148,16 +2199,27 @@ function Wait-ClientExit($Server) {
 function Get-AutoWorkshopMods([string[]]$Libraries, $Exclude) {
     $excluded = @($Exclude | ForEach-Object { "$_" })
     $excludedNames = @($excluded | ForEach-Object { ConvertTo-LinkName $_ })
+    $notDownloaded = @()
     foreach ($mod in Get-WorkshopMods $Libraries | Sort-Object Name) {
         $link = ConvertTo-LinkName $mod.Name
         if (($excluded -contains $mod.Id) -or ($excludedNames -contains $link)) { continue }
         if (Test-IsDayZSoloMod $mod.Path) { continue }
         if (-not (Test-Path -LiteralPath (Join-Path $mod.Path 'Addons'))) {
-            Write-Warn "Skipping $link ($($mod.Id)): no Addons folder, it may still be downloading."
+            $notDownloaded += $link
             continue
         }
         [pscustomobject]@{ Path = $mod.Path; LinkName = $link }
     }
+    if ($notDownloaded.Count) {
+        Write-Warn "$($notDownloaded.Count) Workshop mods aren't downloaded, so they're left out: $(Format-ShortList $notDownloaded 20)"
+        Write-Warn '  DayZ still lists them (unsubscribed, or Steam hasn''t downloaded them). Download them on the Mods tab, or ignore this.'
+    }
+}
+
+function Format-ShortList($Items, [int]$Max = 8) {
+    $list = @($Items | Where-Object { $_ })
+    if ($list.Count -le $Max) { return ($list -join ', ') }
+    return ((($list | Select-Object -First $Max) -join ', ') + " and $($list.Count - $Max) more")
 }
 
 $script:SorterReady = $false

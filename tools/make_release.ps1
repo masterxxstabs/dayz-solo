@@ -27,7 +27,7 @@ if (-not (Test-Path -LiteralPath (Join-Path $ROOT_DIR 'dayzsolo-mod\@DayZSolo\Ke
 }
 
 $EXCLUDE_DIRS = @('signing', '.logs', '.cache', 'Trader', '.git', '.github', 'dist', 'installer')
-$EXCLUDE_FILES = @('.app-token', '.session.json', '.join.json', '.coop-password', 'app-ui.json', '*.biprivatekey', 'trader-mod-items.txt', '*.log')
+$EXCLUDE_FILES = @('.app-token', '.session.json', '.join.json', '.coop-password', 'app-ui.json', '*.biprivatekey', 'trader-mod-items.txt', 'modded-vehicles.txt', '*.log')
 $PERSONAL_SETTINGS = @('config\launcher.json', 'config\SoloSurvivor.json')
 
 $staging = Join-Path ([IO.Path]::GetTempPath()) "DayZSolo-release-$([guid]::NewGuid().ToString('N'))"

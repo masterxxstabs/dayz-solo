@@ -66,6 +66,15 @@ if (Get-Command python -ErrorAction SilentlyContinue) {
     else { Fail 'tools\check_scripts.py found problems' }
 }
 
+# 4b. PowerShell list-return trap and launcher functions
+if (Get-Command python -ErrorAction SilentlyContinue) {
+    $scripts = @(Get-ChildItem -LiteralPath $ROOT -Recurse -Filter '*.ps1' -File | Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' } | ForEach-Object { $_.FullName })
+    $output = & python -I (Join-Path $ROOT 'tools\check_ps_returns.py') @scripts 2>&1
+    if ($LASTEXITCODE -eq 0) { Pass 'no loops over list-returning functions' } else { $output | ForEach-Object { Write-Host "     $_" }; Fail 'tools\check_ps_returns.py found problems' }
+}
+& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $ROOT 'tools\test-launcher-functions.ps1')
+if ($LASTEXITCODE -eq 0) { Pass 'launcher functions' } else { Fail 'tools\test-launcher-functions.ps1 failed' }
+
 # 5. Workshop check against the Steam Web API
 $status = Join-Path $env:TEMP 'dayzsolo-workshop-check.json'
 Remove-Item -LiteralPath $status -Force -ErrorAction SilentlyContinue
