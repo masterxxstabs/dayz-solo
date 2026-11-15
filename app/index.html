@@ -1,0 +1,2712 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DayZ Solo</title>
+<style>
+  :root {
+    --bg: #f3f1ec;
+    --panel: #ffffff;
+    --panel-2: #ebe8e1;
+    --text: #1c1b18;
+    --muted: #69655c;
+    --border: #d5d0c5;
+    --accent: #56743a;
+    --accent-text: #ffffff;
+    --danger: #a3302a;
+    --danger-text: #ffffff;
+    --warn-bg: #fff3cd;
+    --warn-text: #6b4e00;
+    --ok: #3e7a2e;
+    --idle: #8a857a;
+    --busy: #b07a12;
+    --log-bg: #1b1c18;
+    --log-text: #d8d6cf;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #141512;
+      --panel: #1d1f1a;
+      --panel-2: #272923;
+      --text: #e7e5de;
+      --muted: #a09c91;
+      --border: #363831;
+      --accent: #8db35a;
+      --accent-text: #10120c;
+      --danger: #e0645c;
+      --danger-text: #140807;
+      --warn-bg: #3d3210;
+      --warn-text: #f3d98a;
+      --ok: #8fcf6c;
+      --idle: #8f8b80;
+      --busy: #e2b24a;
+      --log-bg: #0f100d;
+      --log-text: #d8d6cf;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #141512;
+    --panel: #1d1f1a;
+    --panel-2: #272923;
+    --text: #e7e5de;
+    --muted: #a09c91;
+    --border: #363831;
+    --accent: #8db35a;
+    --accent-text: #10120c;
+    --danger: #e0645c;
+    --danger-text: #140807;
+    --warn-bg: #3d3210;
+    --warn-text: #f3d98a;
+    --ok: #8fcf6c;
+    --idle: #8f8b80;
+    --busy: #e2b24a;
+    --log-bg: #0f100d;
+    --log-text: #d8d6cf;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header {
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+    padding: 12px 20px; background: var(--panel); border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 10;
+  }
+  header h1 { margin: 0; font-size: 18px; letter-spacing: .3px; }
+  nav { display: flex; gap: 2px; flex-wrap: wrap; }
+  nav button { background: transparent; border: none; padding: 7px 12px; border-radius: 6px; color: var(--muted); font-weight: 600; }
+  nav button[aria-selected="true"] { background: var(--panel-2); color: var(--text); }
+  .spacer { flex: 1; }
+  .pill { display: inline-flex; align-items: center; gap: 7px; padding: 4px 11px; border-radius: 999px; background: var(--panel-2); font-weight: 600; font-size: 13px; }
+  .pill::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--idle); }
+  .pill[data-phase="running"]::before { background: var(--ok); }
+  .pill[data-phase="starting"]::before, .pill[data-phase="stopping"]::before { background: var(--busy); animation: pulse 1s infinite alternate; }
+  @keyframes pulse { from { opacity: 1; } to { opacity: .3; } }
+  @media (prefers-reduced-motion: reduce) { .pill::before { animation: none !important; } }
+  button, input, select, textarea {
+    font: inherit; color: var(--text); background: var(--panel);
+    border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px;
+  }
+  button { cursor: pointer; }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:disabled { opacity: .45; cursor: default; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); font-weight: 700; }
+  button.danger { background: var(--danger); border-color: var(--danger); color: var(--danger-text); font-weight: 700; }
+  button.big { padding: 10px 18px; font-size: 15px; }
+  main { max-width: 1200px; margin: 0 auto; padding: 20px; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; }
+  .card h2 { margin: 0 0 12px; font-size: 15px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .stat { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .stat .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
+  .stat .value { font-size: 22px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .notice { background: var(--warn-bg); color: var(--warn-text); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; }
+  .hint { color: var(--muted); font-size: 12.5px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); }
+  td.num { font-variant-numeric: tabular-nums; }
+  pre.log {
+    background: var(--log-bg); color: var(--log-text); border-radius: 8px; padding: 12px 14px; margin: 0;
+    font: 12.5px/1.5 ui-monospace, Consolas, "Cascadia Mono", monospace; overflow: auto; white-space: pre;
+  }
+  pre.log.wrap { white-space: pre-wrap; word-break: break-word; }
+  pre.log.small { height: 220px; }
+  pre.log.full { height: calc(100vh - 230px); min-height: 300px; }
+  .mods li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 4px; border-bottom: 1px solid var(--border); }
+  .mods { list-style: none; margin: 0; padding: 0; }
+  .mods .order { width: 28px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; padding-top: 1px; }
+  .mods .name { font-weight: 600; }
+  .mods .meta { color: var(--muted); font-size: 12.5px; }
+  .mods .missing { color: var(--danger); font-size: 12.5px; }
+  .badge { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--panel-2); color: var(--muted); margin-left: 6px; }
+  .form { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px 20px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-weight: 600; font-size: 13px; }
+  .check { display: flex; gap: 8px; align-items: center; }
+  .check input { width: 16px; height: 16px; }
+  textarea { width: 100%; min-height: 260px; font: 12.5px/1.45 ui-monospace, Consolas, monospace; }
+  .zones td input { width: 100%; min-width: 70px; }
+  .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .tool { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .tool h3 { margin: 0; font-size: 15px; }
+  .tool p { margin: 0; color: var(--muted); font-size: 13px; flex: 1; }
+  textarea.code { min-height: 64px; word-break: break-all; }
+  .value-text { font: 600 14px/1.6 ui-monospace, Consolas, monospace; padding: 4px 0; overflow-wrap: anywhere; }
+  ul.steps { margin: 0 0 10px; padding-left: 20px; }
+  ul.steps li { margin-bottom: 6px; }
+  .trader-table td { padding: 5px 8px; }
+  .trader-table input[type="text"] { width: 100%; min-width: 120px; }
+  .trader-table select { max-width: 200px; }
+  .num-input { width: 96px; }
+  .item-name { font: 13px/1.4 ui-monospace, Consolas, monospace; overflow-wrap: anywhere; }
+  tr.muted td { opacity: .55; }
+  button.small { padding: 2px 8px; }
+  .row.nowrap { flex-wrap: nowrap; gap: 4px; }
+  h3.sub { margin: 18px 0 10px; font-size: 14px; }
+  .opts { display: flex; flex-direction: column; gap: 2px; font-size: 12.5px; white-space: nowrap; }
+  .opts label { display: flex; gap: 5px; align-items: center; }
+  .save-status { font-size: 12.5px; color: var(--muted); }
+  .save-status[data-state="saving"] { color: var(--busy); }
+  .save-status[data-state="error"] { color: var(--danger); font-weight: 700; }
+  .ws-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 5px; }
+  .ws-badge { font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: var(--panel-2); color: var(--muted); }
+  .ws-badge.ws-outdated, .ws-badge.ws-missing { background: var(--warn-bg); color: var(--warn-text); }
+  .ws-badge.ws-failed, .ws-badge.ws-removed { color: var(--danger); }
+  .ws-badge.ws-up-to-date, .ws-badge.ws-updated { color: var(--ok); }
+  .ws-badge.ws-downloading, .ws-badge.ws-subscribing, .ws-badge.ws-unsubscribing, .ws-badge.ws-removing, .ws-badge.ws-queued { color: var(--busy); }
+  button.tiny { padding: 2px 9px; font-size: 12.5px; }
+  .ws-items { list-style: none; margin: 0 0 10px; padding: 0; }
+  .ws-items li { display: grid; grid-template-columns: minmax(0, 1fr) auto 120px; gap: 10px; align-items: center; padding: 5px 2px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .ws-items progress { width: 120px; }
+  #ws-status[data-state="failed"] { color: var(--danger); }
+  .update-banner { background: var(--panel); border: 1px solid var(--accent); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; }
+  .update-notes { white-space: pre-wrap; font: 13px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; margin: 10px 0 0; max-height: 260px; overflow: auto; }
+  .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 9px 16px; border-radius: 8px; font-weight: 600; z-index: 20; }
+  .toast.error { background: var(--danger); color: var(--danger-text); }
+  [hidden] { display: none !important; }
+  @media (max-width: 640px) {
+    header { padding: 10px 16px; }
+    main { padding: 16px; }
+    .table-scroll { overflow-x: auto; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>DayZ Solo</h1>
+  <span id="phase" class="pill" data-phase="stopped" role="status">Stopped</span>
+  <span id="save-status" class="save-status" data-state="saved" role="status" aria-live="polite" hidden></span>
+  <span class="spacer"></span>
+  <nav role="tablist">
+    <button role="tab" data-tab="dashboard" aria-selected="true">Dashboard</button>
+    <button role="tab" data-tab="logs" aria-selected="false">Logs</button>
+    <button role="tab" data-tab="coop" aria-selected="false">Co-op</button>
+    <button role="tab" data-tab="mods" aria-selected="false">Mods</button>
+    <button role="tab" data-tab="admin" aria-selected="false">Admin</button>
+    <button role="tab" data-tab="trader" aria-selected="false">Trader</button>
+    <button role="tab" data-tab="settings" aria-selected="false">Settings</button>
+    <button role="tab" data-tab="tools" aria-selected="false">Tools</button>
+  </nav>
+</header>
+
+<main>
+  <div id="token-missing" class="notice" hidden>This page needs to be opened from <strong>DayZ Solo.bat</strong>.</div>
+  <div id="notice" class="notice" hidden></div>
+  <div id="update-banner" class="update-banner" hidden role="region" aria-label="Update available">
+    <div class="row">
+      <strong id="update-title"></strong>
+      <span class="spacer"></span>
+      <button id="update-notes-toggle" type="button">What's new</button>
+      <button id="update-later" type="button">Not now</button>
+      <button id="update-install" type="button" class="primary">Update now</button>
+    </div>
+    <pre id="update-notes" class="update-notes" hidden></pre>
+    <p id="update-hint" class="hint" style="margin:6px 0 0"></p>
+  </div>
+
+  <section id="tab-dashboard" role="tabpanel">
+    <div class="card">
+      <div class="row">
+        <button id="btn-play" class="primary big">Play</button>
+        <button id="btn-server" class="big">Start server only</button>
+        <button id="btn-join" class="big">Join game</button>
+        <button id="btn-stop" class="danger big">Stop server</button>
+        <span class="spacer"></span>
+        <label class="check"><input id="stop-with-game" type="checkbox"> Stop the server when I close DayZ</label>
+      </div>
+      <p id="phase-hint" class="hint" style="margin:10px 0 0">The server runs in the background without a window. Play starts it and joins you automatically.</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="label">Uptime</div><div id="stat-uptime" class="value">–</div></div>
+      <div class="stat"><div class="label">Server CPU</div><div id="stat-cpu" class="value">–</div></div>
+      <div class="stat"><div class="label">Server memory</div><div id="stat-mem" class="value">–</div></div>
+      <div class="stat"><div class="label">In-game time</div><div id="stat-time" class="value">–</div></div>
+      <div class="stat"><div class="label">Players</div><div id="stat-players" class="value">–</div></div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="margin-bottom:10px">
+        <h2 style="margin:0">Survivors</h2>
+        <span class="spacer"></span>
+        <button id="atm-here" disabled title="Places a QoL ATM 1.5 m in front of you, facing you, from the next server start">Place an ATM here</button>
+        <button id="trader-here" disabled title="Moves the trader safe zone and its map markers to where you're standing">Put the trader here</button>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Name</th><th>Health</th><th>Blood</th><th>Position (x, z)</th><th>Safe zone</th></tr></thead>
+          <tbody id="players"><tr><td colspan="5" class="hint">Nobody is connected.</td></tr></tbody>
+        </table>
+      </div>
+      <p id="status-age" class="hint" style="margin:8px 0 0"></p>
+    </div>
+
+    <div class="card">
+      <div class="row" style="margin-bottom:10px">
+        <h2 style="margin:0">Events</h2>
+        <span class="spacer"></span>
+        <button class="event-btn" data-event="heli">Trigger heli crash</button>
+        <button class="event-btn" data-event="airdrop">Trigger airdrop</button>
+        <button class="event-btn" data-event="gas">Trigger gas strike</button>
+        <button class="event-btn" data-event="clear">Clear events</button>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Event</th><th>Near</th><th>Position (x, z)</th><th>Age</th></tr></thead>
+          <tbody id="events"><tr><td colspan="4" class="hint">No active events.</td></tr></tbody>
+        </table>
+      </div>
+      <p class="hint" style="margin:8px 0 0">Heli crashes and airdrops also happen on their own while you play (Settings &gt; Events).</p>
+    </div>
+
+    <div class="card">
+      <h2>Message in game</h2>
+      <form id="say-form" class="row">
+        <input id="say-text" type="text" maxlength="200" placeholder="Shown as a notification in game" style="flex:1;min-width:220px">
+        <button type="submit">Send</button>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="row" style="margin-bottom:10px"><h2 style="margin:0">Launcher output</h2><span class="spacer"></span><button data-goto="logs">All logs</button></div>
+      <pre id="mini-log" class="log small wrap"></pre>
+    </div>
+  </section>
+
+  <section id="tab-coop" role="tabpanel" hidden>
+    <div class="card">
+      <div class="row" style="margin-bottom:10px">
+        <h2 style="margin:0">Host: let friends into your world</h2>
+        <span class="spacer"></span>
+        <button id="coop-firewall" title="One admin prompt: adds an inbound Windows Firewall rule for DayZServer_x64.exe">Allow through Windows Firewall</button>
+      </div>
+      <p id="coop-host-off" class="hint">Co-op is off. Turn on <strong>Host co-op</strong> under Settings &gt; Co-op, then press Play on the Dashboard.</p>
+      <div id="coop-host" hidden>
+        <div class="form">
+          <div class="field"><label for="coop-address">Address your friends connect to</label><select id="coop-address"></select></div>
+          <div class="field"><label>Password</label><div id="coop-password" class="value-text"></div></div>
+          <div class="field"><label>Port and slots</label><div id="coop-slots" class="value-text"></div></div>
+        </div>
+        <div class="field" style="margin-top:12px">
+          <label for="coop-invite">Invite code: send this to your friends</label>
+          <textarea id="coop-invite" class="code" readonly></textarea>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <button id="coop-copy" class="primary">Copy invite code</button>
+          <button id="coop-public" title="Asks api.ipify.org for your public IP address">Use my public IP</button>
+          <span id="coop-mods" class="hint"></span>
+        </div>
+        <p id="coop-address-hint" class="hint" style="margin-bottom:0"></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Join a friend</h2>
+      <div class="field"><label for="join-code">Invite code from your friend</label><textarea id="join-code" class="code" placeholder="DZSOLO1-…" spellcheck="false"></textarea></div>
+      <p id="join-summary" class="hint"></p>
+      <details>
+        <summary>No invite code? Enter the details by hand</summary>
+        <div class="form" style="margin-top:10px">
+          <div class="field"><label for="join-address">Address</label><input id="join-address" type="text" placeholder="100.101.102.103" spellcheck="false"></div>
+          <div class="field"><label for="join-port">Port</label><input id="join-port" type="number" min="1" max="65535" value="2302"></div>
+          <div class="field"><label for="join-password">Password</label><input id="join-password" type="text" maxlength="32" spellcheck="false"></div>
+        </div>
+        <p class="hint">Without a code DayZ Solo loads the same mods you would load yourself, so they must match your friend's.</p>
+      </details>
+      <div class="row" style="margin-top:12px"><button id="join-go" class="primary big">Join</button><span id="join-status" class="hint"></span></div>
+      <div id="join-result" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <h2>How your friends reach you</h2>
+      <ul class="steps">
+        <li><strong>Tailscale (easiest, free)</strong>: everyone installs Tailscale and signs in. Invite your friends to your tailnet, or share this PC with them from the Tailscale admin page. DayZ Solo then offers your 100.x.x.x address automatically. No router changes.</li>
+        <li><strong>ZeroTier</strong>: create a network at my.zerotier.com, everyone joins it with the network ID, and you tick "Auth" for each member. Pick the ZeroTier address above.</li>
+        <li><strong>Port forwarding</strong>: in your router, forward UDP ports 2302-2305 to this PC's home-network address, then press <em>Use my public IP</em>. Works without extra software, but shows your public IP to your friends.</li>
+        <li><strong>Same house</strong>: pick the home-network address.</li>
+      </ul>
+      <p class="hint">Press <em>Allow through Windows Firewall</em> once on the host PC. Everyone needs DayZ, the same DayZ Solo version and the same mods; the invite code lists the mods and the Join button tells your friends what they're missing. Voice chat is on in co-op. The server keeps running while friends play, even after you quit.</p>
+    </div>
+  </section>
+
+  <section id="tab-logs" role="tabpanel" hidden>
+    <div class="row" style="margin-bottom:12px">
+      <select id="log-source" aria-label="Log">
+        <option value="launcher">Launcher</option>
+        <option value="server">Server (.RPT)</option>
+        <option value="script">Script log</option>
+      </select>
+      <input id="log-filter" type="search" placeholder="Filter lines" style="min-width:200px">
+      <label class="check"><input id="log-follow" type="checkbox" checked> Follow</label>
+      <label class="check"><input id="log-wrap" type="checkbox"> Wrap</label>
+      <span class="spacer"></span>
+      <span id="log-file" class="hint"></span>
+    </div>
+    <pre id="log" class="log full"></pre>
+  </section>
+
+  <section id="tab-mods" role="tabpanel" hidden>
+    <div class="card">
+      <div class="row" style="margin-bottom:8px">
+        <h2 style="margin:0">Mods</h2>
+        <span class="spacer"></span>
+        <button id="ws-check" title="Asks the Steam Workshop which of your mods have a newer version">Check for updates</button>
+        <button id="ws-update" title="Steam downloads every mod that is out of date or missing">Update all</button>
+        <button id="mods-refresh">Refresh</button>
+
+      </div>
+      <p class="hint" style="margin:0 0 10px">Subscribed Workshop mods load automatically, in dependency order. Untick a mod to leave it out. Changes save by themselves and apply the next time the server starts.</p>
+      <p id="ws-status" class="hint" style="margin:0 0 8px"></p>
+      <ul id="ws-items" class="ws-items" hidden></ul>
+      <div id="mods-loading" class="hint">Loading…</div>
+      <ul id="mods" class="mods"></ul>
+      <p class="hint" style="margin:10px 0 0"><strong>Resubscribe</strong> (like DZSA) unsubscribes, lets Steam delete the mod and downloads a fresh copy: the fix for a mod that is broken, half-updated or gets you kicked. Steam must be running; updating and resubscribing need the server stopped and DayZ closed.</p>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:10px">
+        <h2 style="margin:0">Mod settings files</h2>
+        <span class="spacer"></span>
+        <button id="pf-refresh">Refresh</button>
+      </div>
+      <p class="hint" style="margin-top:0">Settings files mods keep in the server profile, such as QoL\Mining.json, QoL\ATM.json or Expansion's settings. Most mods write theirs on their first start. Stop the server before saving; the first save keeps the original as .dayzsolo-backup.</p>
+      <div class="row" style="margin-bottom:8px">
+        <select id="pf-file" aria-label="Settings file" style="flex:1;min-width:220px"></select>
+        <button id="pf-format">Tidy</button>
+        <button id="pf-save" class="primary" disabled>Save</button>
+      </div>
+      <p id="pf-note" class="notice" hidden></p>
+      <textarea id="pf-text" spellcheck="false" aria-label="File contents" placeholder="Pick a file"></textarea>
+    </div>
+  </section>
+
+  <section id="tab-admin" role="tabpanel" hidden>
+    <div id="admin-offline" class="notice" hidden>Start the server and join the game to use the admin tools.</div>
+    <div class="card">
+      <h2>Players</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th></th><th>Name</th><th>Position (x, z)</th><th>Shop balance</th></tr></thead>
+          <tbody id="admin-players"><tr><td colspan="4" class="hint">Nobody is connected.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="tools">
+      <div class="card">
+        <h2>Money</h2>
+        <div class="row">
+          <input id="admin-amount" type="number" min="0" step="500" value="1000" aria-label="Amount" style="width:140px">
+          <button class="admin-money" data-mode="give">Give</button>
+          <button class="admin-money" data-mode="take">Take</button>
+          <button class="admin-money" data-mode="set">Set balance</button>
+        </div>
+        <p id="admin-shop-hint" class="hint">Changes the player's Solo Shop balance. They get a message in game.</p>
+      </div>
+      <div class="card">
+        <h2>Teleport</h2>
+        <div class="row" style="margin-bottom:10px">
+          <select id="admin-location" aria-label="Location" style="flex:1;min-width:180px"></select>
+          <button id="admin-teleport-preset" class="primary">Teleport</button>
+        </div>
+        <div class="row">
+          <input id="admin-x" type="number" step="10" placeholder="X" aria-label="X coordinate" style="width:110px">
+          <input id="admin-z" type="number" step="10" placeholder="Z" aria-label="Z coordinate" style="width:110px">
+          <button id="admin-teleport-coords">Teleport to X, Z</button>
+        </div>
+        <p class="hint">Puts the player on the ground at that spot. If they're driving, the vehicle goes with them.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-trader" role="tabpanel" hidden>
+    <div class="card">
+      <div class="row" style="margin-bottom:12px">
+        <h2 style="margin:0">Solo Shop (press B in game)</h2>
+        <span class="spacer"></span>
+      </div>
+      <div class="form">
+        <label class="check"><input id="t-enabled" type="checkbox"> Solo Shop: buy and sell anywhere with B, including vehicles</label>
+        <label class="check"><input id="t-zone" type="checkbox"> Only works inside the trader safe zone</label>
+        <label class="check"><input id="t-rarity" type="checkbox"> Rare items cost more, common items less</label>
+      </div>
+      <div class="form" style="margin-top:12px">
+        <div class="field"><label for="t-balance">Starting money</label><input id="t-balance" type="number" min="0" step="500"></div>
+        <div class="field"><label for="t-sell">Trader pays (% of the buy price)</label><input id="t-sell" type="number" min="0" max="100" step="5"></div>
+        <div class="field"><label for="t-multiplier">Price multiplier (1 = normal, 0.5 = half price)</label><input id="t-multiplier" type="number" min="0.05" max="20" step="0.05"></div>
+      </div>
+      <p class="hint" style="margin-bottom:0">Everything on this tab saves by itself and applies the next time the server starts. Prices you set by hand below are never changed by the multiplier or rarity.</p>
+    </div>
+
+    <div class="card">
+      <div class="row" style="margin-bottom:10px">
+        <h2 style="margin:0">Categories</h2>
+        <span class="spacer"></span>
+        <button id="t-cat-add">Add category</button>
+      </div>
+      <div class="table-scroll">
+        <table class="trader-table">
+          <thead><tr><th>Order</th><th>Name in the shop</th><th>Base price</th><th>Trader pays %</th><th>Items</th><th>Show</th><th></th></tr></thead>
+          <tbody id="t-categories"></tbody>
+        </table>
+      </div>
+      <p class="hint" style="margin-bottom:0">Base price is what an average item in that category costs; with rarity on, common items cost 0.6x and rare ones up to 3x. An empty "Trader pays %" uses the shop-wide value. Items keep their base price when you move them to another category. Your own categories start empty: move items into them below.</p>
+    </div>
+
+    <div class="card">
+      <div class="row" style="margin-bottom:10px">
+        <h2 style="margin:0">Items</h2>
+        <span class="spacer"></span>
+        <span id="t-scan-info" class="hint"></span>
+        <button id="t-scan">Rescan items</button>
+      </div>
+      <div id="t-items-empty" class="notice" hidden></div>
+      <div id="t-items-box" hidden>
+        <div class="row" style="margin-bottom:10px">
+          <input id="t-search" type="search" placeholder="Search class names" aria-label="Search items" style="flex:1;min-width:180px">
+          <select id="t-filter-cat" aria-label="Category filter"></select>
+          <select id="t-filter" aria-label="Show">
+            <option value="all">All items</option>
+            <option value="changed">Changed by you</option>
+            <option value="hidden">Hidden</option>
+            <option value="modded">From mods</option>
+            <option value="vehicles">Vehicles and boats</option>
+          </select>
+        </div>
+        <div class="row bulk" style="margin-bottom:10px">
+          <span id="t-count" class="hint"></span>
+          <span class="spacer"></span>
+          <select id="t-bulk-cat" aria-label="Move to category"></select>
+          <button id="t-bulk-move">Move</button>
+          <input id="t-bulk-factor" type="number" min="0.05" step="0.05" value="1.5" aria-label="Price factor" style="width:80px">
+          <button id="t-bulk-price" title="Sets a fixed price: the current price times this factor">Price ×</button>
+          <button id="t-bulk-hide">Hide</button>
+          <button id="t-bulk-show">Show</button>
+          <button id="t-bulk-reset">Reset</button>
+        </div>
+        <div class="table-scroll">
+          <table class="trader-table">
+            <thead><tr><th>Item</th><th>Category</th><th>Buy</th><th>Sell</th><th>Options</th><th>Show</th><th></th></tr></thead>
+            <tbody id="t-items"></tbody>
+          </table>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <button id="t-prev">Previous</button>
+          <span id="t-page" class="hint"></span>
+          <button id="t-next">Next</button>
+        </div>
+      </div>
+      <p class="hint" style="margin-bottom:0">Empty Buy/Sell boxes use the automatic price shown in grey. Bulk buttons change every item matching the search and filters, not just this page. The trader never pays more than the buy price. <strong>Per piece</strong>: prices are for one piece of a stack (coins, nails, rags...) instead of a full stack. <strong>Sell only</strong>: the trader buys it but never sells it.</p>
+    </div>
+
+    <div class="card">
+      <h2>Cash, ATMs and Bitcoin mining</h2>
+      <div class="form">
+        <label class="check"><input id="m-cash" type="checkbox"> Cash: CASH OUT and PAY IN buttons in the shop, and the same bills at QoL ATMs</label>
+        <div class="field"><label for="m-currency">Currency</label>
+          <select id="m-currency">
+            <option value="dollar">US dollars</option>
+            <option value="ruble">Rubles</option>
+            <option value="euro">Euros</option>
+            <option value="mark">Deutsche Mark</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-scroll" style="margin-top:10px">
+        <table class="trader-table">
+          <thead><tr><th>Bill (class name)</th><th>Worth ($)</th></tr></thead>
+          <tbody id="m-bills"></tbody>
+        </table>
+      </div>
+      <p id="m-bills-hint" class="hint"></p>
+
+      <h3 class="sub">QoL ATM</h3>
+      <div class="form">
+        <label class="check"><input id="m-atm-trader" type="checkbox"> An ATM at every trader safe zone (4 m east of its centre)</label>
+        <div class="field"><label for="m-atm-heading">Trader ATM faces (degrees, 0 = north)</label>
+          <div class="row"><input id="m-atm-heading" type="number" min="0" max="359" step="15" style="width:110px"><button id="m-atm-turn" type="button">Turn around</button></div>
+        </div>
+      </div>
+      <div class="table-scroll" style="margin-top:10px">
+        <table class="trader-table">
+          <thead><tr><th>Your ATMs</th><th>Position (x, z)</th><th>Faces</th><th></th></tr></thead>
+          <tbody id="m-atms"></tbody>
+        </table>
+      </div>
+      <p class="hint">Add ATMs with <strong>Place an ATM here</strong> on the Dashboard while you stand in game. The ATM mod writes its settings on its first start, so ATMs appear from the second launch with it.</p>
+
+      <h3 class="sub">QoL Mining</h3>
+      <div class="form">
+        <div class="field"><label for="m-minutes">Minutes of play for the best rig to mine one Bitcoin (0 = leave the mod's own setting)</label><input id="m-minutes" type="number" min="0" step="10"></div>
+      </div>
+      <p class="hint" style="margin-bottom:0">Mining only runs while the server runs, so in solo it counts your playing time. The mod's default is 480 (8 hours); DayZ Solo uses 120. Sell mined Bitcoin at an ATM for cash, then PAY IN at the shop. Bitcoin is hidden from the shop itself unless you show it in the item list.</p>
+    </div>
+
+    <div class="card">
+      <h2>Trader mod (NPC) - mod items</h2>
+      <label class="check" style="margin-bottom:10px"><input id="t-autoTraderItems" type="checkbox"> Add items from my mods to the Trader mod's NPC trader</label>
+      <div class="table-scroll">
+        <table class="trader-table">
+          <thead><tr><th>Category</th><th>Buy</th><th>Sell</th></tr></thead>
+          <tbody id="t-auto"></tbody>
+        </table>
+      </div>
+      <p class="hint" style="margin-bottom:0">Only for the separate <strong>Trader</strong> Workshop mod (Dr. Jones). Its base-game prices stay in config\Trader\TraderConfig.txt.</p>
+    </div>
+  </section>
+
+  <section id="tab-settings" role="tabpanel" hidden>
+    <div class="card">
+      <div class="row" style="margin-bottom:12px">
+        <h2 style="margin:0">Game</h2>
+        <span class="spacer"></span>
+        <span class="hint">Changes save by themselves and apply the next time the server starts.</span>
+      </div>
+      <div class="form">
+        <div class="field"><label for="s-playerName">Survivor name</label><input id="s-playerName" type="text"></div>
+        <div class="field"><label for="s-map">Map</label>
+          <select id="s-map">
+            <option value="chernarusplus">Chernarus</option>
+            <option value="enoch">Livonia</option>
+            <option value="sakhal">Sakhal</option>
+          </select>
+        </div>
+        <div class="field"><label for="s-lootMultiplier">Loot multiplier</label><input id="s-lootMultiplier" type="number" min="0.1" step="0.5"></div>
+        <div class="field"><label for="s-zombies">Zombies</label>
+          <select id="s-zombies">
+            <option value="1">Normal</option>
+            <option value="0.75">Fewer (75%)</option>
+            <option value="0.5">Half</option>
+            <option value="0.25">Few (25%)</option>
+            <option value="0">None</option>
+          </select>
+        </div>
+        <div class="field"><label for="s-cars">Cars</label>
+          <select id="s-cars">
+            <option value="1">Normal</option>
+            <option value="1.5">More (1.5x)</option>
+            <option value="2">Double</option>
+            <option value="3">Triple</option>
+          </select>
+        </div>
+        <div class="field"><label for="s-carParts">Modded car parts</label>
+          <select id="s-carParts">
+            <option value="1">Complete - every part</option>
+            <option value="0.75">Mostly complete</option>
+            <option value="0.5">About half the parts</option>
+          </select>
+        </div>
+        <div class="field"><label for="s-gasMode">Toxic gas</label>
+          <select id="s-gasMode">
+            <option value="random">One random gas strike every couple of hours</option>
+            <option value="off">Off</option>
+            <option value="default">Game default zones</option>
+          </select>
+        </div>
+        <div class="field"><label for="s-respawn">Loot respawn speed</label>
+          <select id="s-respawn">
+            <option value="normal">Normal</option>
+            <option value="fast">Fast - restock timers halved</option>
+            <option value="veryfast">Very fast - restock timers quartered</option>
+          </select>
+        </div>
+        <div class="field"><label for="s-foodMultiplier">Food &amp; drink multiplier (on top of loot)</label><input id="s-foodMultiplier" type="number" min="0.1" step="0.5"></div>
+        <div class="field"><label for="s-serverTimeAcceleration">Day speed</label><input id="s-serverTimeAcceleration" type="number" min="0.1" step="1"></div>
+        <div class="field"><label for="s-serverNightTimeAcceleration">Night speed (on top of day speed)</label><input id="s-serverNightTimeAcceleration" type="number" min="0.1" step="1"></div>
+        <div class="field"><label for="s-WelcomeMessage">Welcome message</label><input id="s-WelcomeMessage" type="text"></div>
+        <div class="field"><label for="s-ExtraStartingItems">Extra starting items (comma separated class names)</label><input id="s-ExtraStartingItems" type="text" placeholder="Hatchet, Canteen, BandageDressing"></div>
+      </div>
+      <div class="form" style="margin-top:14px">
+        <label class="check"><input id="s-stopServerWhenGameCloses" type="checkbox"> Stop the server when I close DayZ</label>
+        <label class="check"><input id="s-foodNoRot" type="checkbox"> Food never rots</label>
+
+        <label class="check"><input id="s-AlwaysDay" type="checkbox"> Always daytime (07:00-19:00)</label>
+        <label class="check"><input id="s-autoWorkshopMods" type="checkbox"> Load all subscribed Workshop mods</label>
+        <label class="check"><input id="s-modUpdates" type="checkbox"> Update Workshop mods before every launch and join (Steam downloads new versions first, like DZSA)</label>
+        <label class="check"><input id="s-moddedVehicles" type="checkbox"> Add modded cars to the car spawns</label>
+        <label class="check"><input id="s-modLoot" type="checkbox"> Spawn mods' own loot (their ServerFiles *_ce folders, e.g. QoL Mining's mining_ce)</label>
+        <label class="check"><input id="s-modLootMultiplier" type="checkbox"> Apply the loot multiplier to mods' own loot too</label>
+        <label class="check"><input id="s-enableMinimap" type="checkbox"> Minimap (N to show/hide, numpad +/− to zoom)</label>
+        <label class="check"><input id="s-disable3rdPerson" type="checkbox"> First person only</label>
+        <label class="check"><input id="s-disableCrosshair" type="checkbox"> No crosshair</label>
+        <label class="check"><input id="s-useBattlEye" type="checkbox"> Use BattlEye</label>
+        <label class="check"><input id="s-verifySignatures" type="checkbox"> Check mod signatures</label>
+        <label class="check"><input id="s-UseFixedSpawn" type="checkbox"> Always spawn new characters at a fixed spot</label>
+      </div>
+      <div class="form" style="margin-top:12px">
+        <div class="field"><label for="s-spawnX">Fixed spawn X</label><input id="s-spawnX" type="number" step="1"></div>
+        <div class="field"><label for="s-spawnZ">Fixed spawn Z</label><input id="s-spawnZ" type="number" step="1"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Events</h2>
+      <div class="form">
+        <label class="check"><input id="e-Enabled" type="checkbox"> Random heli crashes and airdrops</label>
+        <label class="check"><input id="e-HeliCrash" type="checkbox"> Heli crashes</label>
+        <label class="check"><input id="e-Airdrop" type="checkbox"> Airdrops</label>
+      </div>
+      <div class="form" style="margin-top:12px">
+        <div class="field"><label for="e-MinIntervalMinutes">Minutes between events (min)</label><input id="e-MinIntervalMinutes" type="number" min="1" step="5"></div>
+        <div class="field"><label for="e-MaxIntervalMinutes">Minutes between events (max)</label><input id="e-MaxIntervalMinutes" type="number" min="1" step="5"></div>
+        <div class="field"><label for="e-DespawnMinutes">Event lasts (minutes)</label><input id="e-DespawnMinutes" type="number" min="5" step="5"></div>
+        <div class="field"><label for="e-MaxActive">Max events at once</label><input id="e-MaxActive" type="number" min="1" step="1"></div>
+      </div>
+      <p class="hint">Locations, loot, wrecks and zombies are in config\SoloSurvivor.json under "Events" (Advanced below).</p>
+    </div>
+
+    <p class="hint">Shop prices, categories and the NPC trader's mod items are on the <strong>Trader</strong> tab.</p>
+
+    <div class="card">
+      <h2>Bandits (Expansion AI)</h2>
+      <div class="form">
+        <label class="check"><input id="b-enabled" type="checkbox"> Roaming bandit groups</label>
+        <label class="check"><input id="b-military" type="checkbox"> Military gear (helmets, plate carriers, camo)</label>
+        <div class="field"><label for="b-groups">Groups on the map</label><input id="b-groups" type="number" min="1" max="20" step="1"></div>
+        <div class="field"><label for="b-size">Bandits per group (up to)</label><input id="b-size" type="number" min="1" max="10" step="1"></div>
+        <div class="field"><label for="b-difficulty">Difficulty</label>
+          <select id="b-difficulty">
+            <option value="easy">Easy - poor aim, less damage</option>
+            <option value="normal">Normal</option>
+            <option value="hard">Hard - good aim, full damage</option>
+          </select>
+        </div>
+      </div>
+      <p class="hint">Needs the DayZ-Expansion-AI mod (and its required items) from the Workshop. Bandits start roaming from the second launch after enabling, and are killed if they walk into the trader safe zone.</p>
+    </div>
+
+    <div class="card">
+      <h2>Co-op</h2>
+      <div class="form">
+        <label class="check"><input id="c-enabled" type="checkbox"> Host co-op: let friends join my world</label>
+        <div class="field"><label for="c-slots">Players, including you</label><input id="c-slots" type="number" min="2" max="10" step="1"></div>
+        <div class="field"><label for="c-password">Password your friends use</label>
+          <div class="row"><input id="c-password" type="text" maxlength="32" spellcheck="false" placeholder="Generated for you" style="flex:1"><button id="c-newpass" type="button">New password</button></div>
+        </div>
+      </div>
+      <p class="hint">Letters, digits, - and _ only. Left empty, DayZ Solo picks one and keeps it between starts so invite codes stay valid. The Co-op tab has the invite code once the server is up.</p>
+    </div>
+
+    <div class="card">
+      <div class="row" style="margin-bottom:10px"><h2 style="margin:0">Safe zones</h2><span class="spacer"></span><button id="zone-add">Add zone</button></div>
+      <div class="table-scroll">
+        <table class="zones">
+          <thead><tr><th>Name</th><th>X</th><th>Z</th><th>Radius (m)</th><th></th></tr></thead>
+          <tbody id="zones"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <details class="card">
+      <summary><strong>Advanced: edit the raw settings files</strong></summary>
+      <p class="hint">Everything above is saved into these files as you change it. Edit here for settings without a field, then press Save raw files; the form is reloaded from them.</p>
+      <div class="form">
+        <div class="field"><label for="raw-launcher">config\launcher.json</label><textarea id="raw-launcher" spellcheck="false"></textarea></div>
+        <div class="field"><label for="raw-solo">config\SoloSurvivor.json</label><textarea id="raw-solo" spellcheck="false"></textarea></div>
+      </div>
+      <div class="row" style="margin-top:10px"><button id="raw-save">Save raw files</button></div>
+    </details>
+  </section>
+
+  <section id="tab-tools" role="tabpanel" hidden>
+    <div class="tools">
+      <div class="tool">
+        <h3>Loot &amp; Spawn Editor</h3>
+        <p>Item spawn amounts, world settings (zombies, animals, cleanup) and events (vehicles, heli crashes). Stop the server before saving.</p>
+        <button id="open-loot" class="primary">Open editor</button>
+      </div>
+      <div class="tool">
+        <h3>Mission folder</h3>
+        <p>The server's loot files and your world save (storage_1).</p>
+        <button data-open="mission">Open folder</button>
+      </div>
+      <div class="tool">
+        <h3>Server profile</h3>
+        <p>Logs, trader setup and Solo Survivor settings the server is using.</p>
+        <button data-open="profiles">Open folder</button>
+      </div>
+      <div class="tool">
+        <h3>Launcher settings</h3>
+        <p>launcher.json, SoloSurvivor.json, Trader setup and the app logs.</p>
+        <button data-open="config">Open folder</button>
+      </div>
+      <div class="tool">
+        <h3>Updates</h3>
+        <p id="update-status">Checking for updates…</p>
+        <button id="update-check">Check now</button>
+      </div>
+      <div class="tool">
+        <h3>Quit the app</h3>
+        <p>Closes this control panel. A running server keeps running; open the app again to stop it.</p>
+        <button id="quit">Quit</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+"use strict";
+
+const TOKEN_KEY = "dayzsolo-token";
+const APP_VERSION = "__APP_VERSION__";
+const $ = (id) => document.getElementById(id);
+
+function readToken() {
+  const fromHash = new URLSearchParams(location.hash.slice(1)).get("token");
+  if (fromHash) {
+    try { sessionStorage.setItem(TOKEN_KEY, fromHash); } catch { /* storage may be blocked */ }
+    history.replaceState(null, "", location.pathname);
+    return fromHash;
+  }
+  try { return sessionStorage.getItem(TOKEN_KEY) || ""; } catch { return ""; }
+}
+const TOKEN = readToken();
+
+const ui = {
+  state: null,
+  tab: "dashboard",
+  miniLog: { from: -1, file: "" },
+  log: { from: -1, file: "", source: "launcher", lines: [] },
+  mods: null,
+  config: null,
+  busy: false,
+};
+
+async function api(path, options) {
+  const opts = Object.assign({ method: "GET" }, options || {});
+  opts.headers = Object.assign({ "X-DayZSolo-Token": TOKEN }, opts.headers || {});
+  if (opts.json !== undefined) {
+    opts.body = JSON.stringify(opts.json);
+    opts.headers["Content-Type"] = "application/json";
+    delete opts.json;
+  }
+  const res = await fetch(path, opts);
+  const type = res.headers.get("Content-Type") || "";
+  const body = type.includes("json") ? await res.json() : await res.text();
+  if (!res.ok) throw new Error((body && body.error) || `Request failed (${res.status})`);
+  return body;
+}
+
+let toastTimer = null;
+function toast(message, isError) {
+  let el = document.querySelector(".toast");
+  if (!el) { el = document.createElement("div"); el.className = "toast"; el.setAttribute("role", "alert"); document.body.appendChild(el); }
+  el.textContent = message;
+  el.classList.toggle("error", !!isError);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.remove(), isError ? 6000 : 3000);
+}
+
+async function act(fn, okMessage) {
+  try {
+    const result = await fn();
+    if (okMessage) toast(okMessage);
+    await refreshState();
+    return result;
+  } catch (e) {
+    toast(e.message, true);
+  }
+}
+
+/* ---------- App updates ---------- */
+
+ui.intervals = [];
+
+function closePage(html) {
+  for (const id of ui.intervals) clearInterval(id);
+  ui.intervals = [];
+  if (ui.ws) clearTimeout(ui.ws.timer);
+  document.body.innerHTML = html;
+}
+
+ui.update = null;
+
+function renderUpdate(update) {
+  if (!update) return;
+  ui.update = update;
+  const banner = $("update-banner");
+  const skipped = ui.prefs && ui.prefs.skipUpdate === update.latest;
+  banner.hidden = !update.available || skipped;
+  const busy = !ui.state || ui.state.phase !== "stopped" || ui.state.clientRunning || ui.state.workshopBusy;
+  if (update.available) {
+    $("update-title").textContent = `DayZ Solo ${update.latest} is out - you have ${update.current}.`;
+    if ($("update-notes").textContent !== (update.notes || "")) $("update-notes").textContent = update.notes || "No notes for this release.";
+    $("update-install").textContent = update.installable ? "Update now" : "Download";
+    $("update-install").disabled = update.installable && busy;
+    $("update-hint").textContent = !update.installable
+      ? "This copy wasn't installed with the installer, so download the installer and run it once; after that, updates install themselves."
+      : busy ? "Stop the server and close DayZ to update." : "DayZ Solo closes, installs the update and opens again by itself. Your settings and world stay as they are.";
+  }
+  const status = $("update-status");
+  if (update.checking) status.textContent = `You have DayZ Solo ${update.current}. Checking for updates…`;
+  else if (update.available) status.textContent = `You have DayZ Solo ${update.current}. Version ${update.latest} is available.`;
+  else if (update.error) status.textContent = `You have DayZ Solo ${update.current}. ${update.error}`;
+  else if (update.checkedAt) status.textContent = `You have DayZ Solo ${update.current}, the newest version (checked ${new Date(update.checkedAt).toLocaleTimeString()}).`;
+  else status.textContent = `You have DayZ Solo ${update.current}.`;
+  $("update-check").disabled = !!update.checking;
+}
+
+async function installUpdate() {
+  const update = ui.update;
+  if (!update || !update.available) return;
+  if (!update.installable) { window.open(update.page, "_blank", "noopener"); return; }
+  if (!confirm(`Update to DayZ Solo ${update.latest}? It closes, installs the update and opens again by itself.`)) return;
+  $("update-install").disabled = true;
+  $("update-install").textContent = "Downloading…";
+  try {
+    await flushSaves();
+    await api("/api/update/install", { method: "POST" });
+    closePage(`<main><div class="card"><h2>Updating to DayZ Solo ${update.latest}…</h2><p class="hint">DayZ Solo installs the update and opens again by itself in a moment. You can close this window.</p></div></main>`);
+  } catch (e) {
+    toast(e.message, true);
+    $("update-install").textContent = "Update now";
+    $("update-install").disabled = false;
+  }
+}
+
+/* ---------- Saving ---------- */
+
+const saver = { timers: new Map(), pending: new Map(), running: 0, chain: Promise.resolve(), failed: false };
+
+function saveIdle() { return saver.pending.size === 0 && saver.running === 0; }
+
+function setSaveStatus() {
+  const el = $("save-status");
+  const busy = !saveIdle();
+  el.hidden = false;
+  el.dataset.state = saver.failed && !busy ? "error" : busy ? "saving" : "saved";
+  el.textContent = saver.failed && !busy ? "Not saved - change it again to retry" : busy ? "Saving…" : "All changes saved";
+}
+
+// apply(launcher, solo) changes freshly read settings in place and returns { launcher, solo }:
+// true to write that file as changed, or an object to write instead of it.
+function scheduleSave(key, apply, delay) {
+  saver.pending.set(key, apply);
+  clearTimeout(saver.timers.get(key));
+  saver.timers.set(key, setTimeout(() => runSave(key), delay == null ? 600 : delay));
+  setSaveStatus();
+}
+
+function runSave(key) {
+  clearTimeout(saver.timers.get(key));
+  saver.timers.delete(key);
+  const apply = saver.pending.get(key);
+  if (!apply) return saver.chain;
+  saver.pending.delete(key);
+  saver.running++;
+  saver.chain = saver.chain.then(async () => {
+    try {
+      const config = await api("/api/config");
+      const files = { launcher: JSON.parse(config.launcher), solo: JSON.parse(config.solo) };
+      const changed = apply(files.launcher, files.solo) || {};
+      const body = {};
+      for (const name of ["launcher", "solo"]) {
+        if (!changed[name]) continue;
+        body[name] = JSON.stringify(changed[name] === true ? files[name] : changed[name], null, 4) + "\n";
+      }
+      if (body.launcher || body.solo) await api("/api/config", { method: "POST", json: body });
+      saver.failed = false;
+      onConfigSaved(body);
+    } catch (e) {
+      saver.failed = true;
+      toast(`Couldn't save your settings: ${e.message}`, true);
+      if (!apply.retried && !saver.pending.has(key)) {
+        apply.retried = true;
+        scheduleSave(key, apply, 3000);
+      }
+    } finally {
+      saver.running--;
+      setSaveStatus();
+    }
+  });
+  return saver.chain;
+}
+
+function flushSaves() {
+  for (const key of [...saver.pending.keys()]) runSave(key);
+  return saver.chain;
+}
+
+function onConfigSaved(body) {
+  if (ui.rawDirty) return;
+  if (body.launcher) $("raw-launcher").value = body.launcher;
+  if (body.solo) $("raw-solo").value = body.solo;
+}
+
+/* ---------- Remembered app state ---------- */
+
+const PREF_FIELDS = {
+  "log-source": "value", "log-filter": "value", "log-follow": "checked", "log-wrap": "checked",
+  "t-search": "value", "t-filter": "value", "t-bulk-factor": "value",
+  "join-code": "value", "join-address": "value", "join-port": "value", "join-password": "value",
+  "admin-amount": "value", "admin-x": "value", "admin-z": "value",
+};
+ui.prefs = { fields: {} };
+let prefsTimer = null;
+
+function savePrefs() {
+  clearTimeout(prefsTimer);
+  prefsTimer = setTimeout(() => { api("/api/ui-state", { method: "POST", json: ui.prefs }).catch(() => { /* retried on the next change */ }); }, 800);
+}
+
+function rememberPref(key, value) {
+  if (ui.prefs[key] === value) return;
+  ui.prefs[key] = value;
+  savePrefs();
+}
+
+async function loadPrefs() {
+  try {
+    const saved = await api("/api/ui-state");
+    if (saved && typeof saved === "object") ui.prefs = Object.assign({ fields: {} }, saved);
+  } catch { /* first start */ }
+  if (!ui.prefs.fields || typeof ui.prefs.fields !== "object") ui.prefs.fields = {};
+  for (const [id, prop] of Object.entries(PREF_FIELDS)) {
+    if (id in ui.prefs.fields) $(id)[prop] = ui.prefs.fields[id];
+  }
+  $("log").classList.toggle("wrap", $("log-wrap").checked);
+  if (ui.prefs.publicIp) ui.coop.publicIp = ui.prefs.publicIp;
+  renderJoinSummary();
+}
+
+function formatDuration(seconds) {
+  if (seconds == null) return "–";
+  const h = Math.floor(seconds / 3600), m = Math.floor((seconds % 3600) / 60), s = Math.floor(seconds % 60);
+  return h ? `${h}h ${m}m` : m ? `${m}m ${s}s` : `${s}s`;
+}
+
+const PHASE_TEXT = { stopped: "Stopped", starting: "Starting…", running: "Running", stopping: "Saving & stopping…" };
+const PHASE_HINT = {
+  stopped: "The server runs in the background without a window. Play starts it and joins you automatically.",
+  starting: "Building the world and loading mods. The first start can take a few minutes.",
+  running: "Your private server is up.",
+  coop: "Your co-op server is up. Share the invite code on the Co-op tab.",
+  stopping: "The server is saving your world. This can take up to a minute.",
+};
+
+function renderState(s) {
+  ui.state = s;
+  const phase = s.phase;
+  const pill = $("phase");
+  pill.dataset.phase = phase;
+  pill.textContent = PHASE_TEXT[phase] + (phase === "running" && s.port ? ` · port ${s.port}` : "");
+  $("phase-hint").textContent = (phase === "running" && s.coop ? PHASE_HINT.coop : PHASE_HINT[phase]) + (phase === "running" && s.clientRunning ? " DayZ is running." : "");
+
+  $("btn-play").disabled = phase !== "stopped";
+  $("btn-server").disabled = phase !== "stopped";
+  $("btn-join").disabled = phase !== "running" || s.clientRunning;
+  $("btn-stop").disabled = phase === "stopped" || phase === "stopping";
+  for (const b of document.querySelectorAll(".event-btn")) b.disabled = phase !== "running";
+  $("stop-with-game").checked = !!s.stopWhenGameCloses;
+
+  $("stat-uptime").textContent = formatDuration(s.uptimeSeconds);
+  $("stat-cpu").textContent = s.cpuPercent == null ? "–" : `${s.cpuPercent}%`;
+  $("stat-mem").textContent = s.memoryMB == null ? "–" : s.memoryMB >= 1024 ? `${(s.memoryMB / 1024).toFixed(1)} GB` : `${s.memoryMB} MB`;
+
+  const notice = $("notice");
+  const outdated = s.fromServer && s.appVersion !== APP_VERSION;
+  const message = outdated
+    ? "This window is talking to an older DayZ Solo app. Close the DayZ Solo console window and open DayZ Solo.bat again."
+    : s.notice || "";
+  notice.hidden = !message;
+  notice.textContent = message;
+  renderCoop();
+  renderUpdate(s.update);
+  const blockKey = `${phase}|${!!s.clientRunning}|${!!s.workshopBusy}`;
+  if (ui.ws && ui.ws.blockKey !== blockKey) {
+    ui.ws.blockKey = blockKey;
+    renderWorkshop();
+  }
+}
+
+function renderEvents(events) {
+  const body = $("events");
+  body.innerHTML = "";
+  if (!events || !events.length) {
+    body.innerHTML = '<tr><td colspan="4" class="hint">No active events.</td></tr>';
+    return;
+  }
+  for (const ev of events) {
+    const tr = document.createElement("tr");
+    const pos = ev.Position || [0, 0, 0];
+    [ev.Label, ev.Place, `${Math.round(pos[0])}, ${Math.round(pos[2])}`, `${Math.round(ev.AgeMinutes)} min`].forEach((text, i) => {
+      const td = document.createElement("td");
+      td.textContent = text;
+      if (i >= 2) td.className = "num";
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  }
+}
+
+function renderStatus(status) {
+  ui.status = status;
+  $("trader-here").disabled = !(status && status.data && (status.data.Survivors || []).length);
+  $("atm-here").disabled = $("trader-here").disabled;
+  renderEvents(status && status.data ? status.data.Events : null);
+  const body = $("players");
+  body.innerHTML = "";
+  if (!status || !status.data) {
+    $("stat-time").textContent = "–";
+    $("stat-players").textContent = ui.state && ui.state.phase === "running" ? "0" : "–";
+    body.innerHTML = '<tr><td colspan="5" class="hint">Nobody is connected.</td></tr>';
+    $("status-age").textContent = ui.state && ui.state.phase === "running" ? "Waiting for the Solo Survivor mod to report in…" : "";
+    return;
+  }
+  const d = status.data;
+  $("stat-time").textContent = d.WorldTime || "–";
+  $("stat-players").textContent = String(d.Players || 0);
+  const survivors = d.Survivors || [];
+  if (!survivors.length) body.innerHTML = '<tr><td colspan="5" class="hint">Nobody is connected.</td></tr>';
+  for (const p of survivors) {
+    const tr = document.createElement("tr");
+    const pos = p.Position || [0, 0, 0];
+    const cells = [
+      p.Name,
+      `${Math.round(p.Health)}%`,
+      `${Math.round((p.Blood / 5000) * 100)}%`,
+      `${Math.round(pos[0])}, ${Math.round(pos[2])}`,
+      p.InSafeZone ? "Yes" : "No",
+    ];
+    cells.forEach((text, i) => {
+      const td = document.createElement("td");
+      td.textContent = text;
+      if (i > 0 && i < 4) td.className = "num";
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  }
+  $("status-age").textContent = status.ageSeconds > 20 ? `Last report ${status.ageSeconds}s ago - the server may be busy.` : "";
+}
+
+async function refreshState() {
+  if (!TOKEN) return;
+  try { renderState(Object.assign({ fromServer: true }, await api("/api/state"))); }
+  catch (e) { renderState({ phase: "stopped", notice: `Can't reach the app: ${e.message}. Is the DayZ Solo window still open?` }); }
+}
+
+async function refreshStatus() {
+  if (!ui.state || ui.state.phase === "stopped") { renderStatus(null); return; }
+  try { renderStatus(await api("/api/status")); } catch { /* next poll retries */ }
+}
+
+async function pollLog(target, source, el, filter) {
+  const params = new URLSearchParams({ source, from: String(target.from) });
+  if (target.file) params.set("file", target.file);
+  const result = await api(`/api/log?${params}`);
+  const reset = result.file !== target.file || result.next < target.from;
+  if (reset) { el.textContent = ""; target.lines = []; }
+  target.file = result.file || "";
+  target.from = result.next;
+  if (result.text) {
+    target.lines = (target.lines || []).concat(result.text.split(/\r?\n/));
+    if (target.lines.length > 4000) target.lines = target.lines.slice(-4000);
+  }
+  const lines = filter ? target.lines.filter((l) => l.toLowerCase().includes(filter)) : target.lines;
+  el.textContent = lines.join("\n");
+  return result;
+}
+
+async function refreshMiniLog() {
+  const el = $("mini-log");
+  try {
+    const result = await pollLog(ui.miniLog, "launcher", el, "");
+    ui.miniLog.lines = ui.miniLog.lines.slice(-200);
+    if (result.missing) el.textContent = "Nothing yet - press Play.";
+    el.scrollTop = el.scrollHeight;
+  } catch { /* next poll retries */ }
+}
+
+async function refreshLog() {
+  const el = $("log");
+  const source = $("log-source").value;
+  if (source !== ui.log.source) { ui.log = { from: -1, file: "", source, lines: [] }; el.textContent = ""; }
+  try {
+    const result = await pollLog(ui.log, source, el, $("log-filter").value.trim().toLowerCase());
+    $("log-file").textContent = result.missing ? "No log file yet" : result.file;
+    if ($("log-follow").checked) el.scrollTop = el.scrollHeight;
+  } catch (e) {
+    $("log-file").textContent = e.message;
+  }
+}
+
+async function showTab(name) {
+  ui.tab = name;
+  rememberPref("tab", name);
+  for (const b of document.querySelectorAll("nav button")) b.setAttribute("aria-selected", String(b.dataset.tab === name));
+  for (const sec of document.querySelectorAll("main > section")) sec.hidden = sec.id !== `tab-${name}`;
+  if (name === "logs") refreshLog();
+  if (name === "mods" && !ui.mods) loadMods();
+  if (name === "mods") loadProfileFiles();
+  if (name === "settings") { await flushSaves(); loadSettings(); }
+  if (name === "admin") refreshAdmin();
+  if (name === "trader") loadTrader(false);
+}
+
+/* ---------- Admin ---------- */
+
+ui.admin = { uid: "", info: null };
+
+function adminSurvivors() {
+  return ui.status && ui.status.data ? ui.status.data.Survivors || [] : [];
+}
+
+async function refreshAdmin() {
+  try { ui.admin.info = await api("/api/admin/info"); } catch { /* next poll retries */ }
+  renderAdmin();
+}
+
+function renderAdmin() {
+  const running = ui.state && ui.state.phase === "running";
+  const survivors = adminSurvivors();
+  $("admin-offline").hidden = running && survivors.length > 0;
+  if (!survivors.some((p) => p.Uid === ui.admin.uid)) ui.admin.uid = survivors.length ? survivors[0].Uid : "";
+
+  const balances = (ui.admin.info && ui.admin.info.balances) || {};
+  const body = $("admin-players");
+  body.innerHTML = "";
+  if (!survivors.length) body.innerHTML = '<tr><td colspan="4" class="hint">Nobody is connected.</td></tr>';
+  for (const p of survivors) {
+    const tr = document.createElement("tr");
+    const pick = document.createElement("td");
+    const radio = document.createElement("input");
+    radio.type = "radio";
+    radio.name = "admin-player";
+    radio.checked = p.Uid === ui.admin.uid;
+    radio.setAttribute("aria-label", `Select ${p.Name}`);
+    radio.addEventListener("change", () => { ui.admin.uid = p.Uid; });
+    pick.appendChild(radio);
+    tr.appendChild(pick);
+    const pos = p.Position || [0, 0, 0];
+    const balance = balances[p.Uid];
+    [p.Name, `${Math.round(pos[0])}, ${Math.round(pos[2])}`, balance == null ? "-" : `$${balance.toLocaleString()}`].forEach((text, i) => {
+      const td = document.createElement("td");
+      td.textContent = text;
+      if (i > 0) td.className = "num";
+      tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  }
+
+  const shopOn = !!(ui.admin.info && ui.admin.info.shopEnabled);
+  for (const b of document.querySelectorAll(".admin-money")) b.disabled = !running || !ui.admin.uid || !shopOn;
+  $("admin-shop-hint").textContent = shopOn
+    ? "Changes the player's Solo Shop balance. They get a message in game."
+    : "Turn on the Solo Shop (Trader tab) to manage money.";
+  $("admin-teleport-preset").disabled = !running || !ui.admin.uid;
+  $("admin-teleport-coords").disabled = !running || !ui.admin.uid;
+
+  const select = $("admin-location");
+  const locations = (ui.admin.info && ui.admin.info.locations) || [];
+  const signature = locations.map((l) => l.name).join("|");
+  if (select.dataset.signature !== signature) {
+    select.dataset.signature = signature;
+    select.innerHTML = "";
+    locations.forEach((l, i) => select.add(new Option(`${l.name} (${Math.round(l.x)}, ${Math.round(l.z)})`, String(i))));
+    if (!locations.length) select.add(new Option("No saved locations", ""));
+  }
+}
+
+async function adminAction(payload, message) {
+  await act(() => api("/api/admin", { method: "POST", json: Object.assign({ uid: ui.admin.uid }, payload) }), message);
+  setTimeout(refreshAdmin, 2500);
+}
+
+/* ---------- Mods ---------- */
+
+function modKey(name) { return name.replace(/^@/, "").toLowerCase(); }
+
+/* ---------- Workshop updates and resubscribe ---------- */
+
+const WS_LABELS = {
+  "up-to-date": "up to date", outdated: "update available", missing: "not downloaded", removed: "removed from the Workshop",
+  unknown: "couldn't check", checking: "checking…", subscribing: "subscribing…", unsubscribing: "unsubscribing…",
+  unsubscribed: "unsubscribed", removing: "removing old files…", queued: "waiting for Steam…", downloading: "downloading",
+  updated: "updated", failed: "failed",
+};
+const WS_ACTIONS = { check: "Checking for updates", update: "Updating mods", resubscribe: "Resubscribing" };
+const WS_AUTO_CHECK_MS = 15 * 60 * 1000;
+ui.ws = { job: null, running: false, byId: {}, timer: null, waiters: [], autoChecked: false, joinWaiting: false };
+
+function wsBlocked() {
+  return ui.ws.running || !ui.state || ui.state.phase !== "stopped" || ui.state.clientRunning;
+}
+
+function workshopIds() {
+  return ((ui.mods && ui.mods.workshop) || []).map((w) => String(w.id)).filter((id) => /^\d+$/.test(id));
+}
+
+function workshopIdOfPath(path) {
+  const match = String(path || "").match(/[\\/]workshop[\\/]content[\\/]221100[\\/](\d+)/i);
+  return match ? match[1] : "";
+}
+
+async function ownWorkshopIds() {
+  try {
+    const mods = ui.mods || await api("/api/mods");
+    return [...(mods.client || []), ...(mods.serverOnly || [])].map((m) => workshopIdOfPath(m.path)).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function workshopSummary() {
+  const job = ui.ws.job;
+  if (ui.ws.running) {
+    const label = WS_ACTIONS[(job && job.action) || "check"] || "Talking to Steam";
+    const items = (job && job.items) || [];
+    const busy = items.find((i) => ["downloading", "subscribing", "unsubscribing", "removing", "queued"].includes(i.status));
+    if (!busy) return `${label}…`;
+    const done = items.filter((i) => ["updated", "up-to-date", "failed"].includes(i.status)).length;
+    const progress = busy.status === "downloading" ? ` ${busy.progress || 0}%` : "";
+    return `${label}: ${busy.name} ${WS_LABELS[busy.status] || busy.status}${progress} (${Math.min(done + 1, items.length)} of ${items.length})`;
+  }
+  if (!job) return "";
+  const when = job.finishedAt ? new Date(job.finishedAt) : null;
+  return `${job.message || ""}${when && !isNaN(when) ? ` (${when.toLocaleTimeString()})` : ""}`;
+}
+
+function renderWorkshop() {
+  const job = ui.ws.job;
+  const status = $("ws-status");
+  status.textContent = workshopSummary();
+  status.dataset.state = ui.ws.running ? "running" : (job && job.state) || "";
+  if (ui.ws.joinWaiting) $("join-status").textContent = workshopSummary();
+  $("ws-check").disabled = ui.ws.running || !workshopIds().length;
+  $("ws-update").disabled = wsBlocked() || !workshopIds().length;
+  $("ws-check").textContent = ui.ws.running && job && job.action === "check" ? "Checking…" : "Check for updates";
+
+  const list = $("ws-items");
+  const showItems = job && job.action !== "check" && (job.items || []).length;
+  list.hidden = !showItems;
+  list.innerHTML = "";
+  if (showItems) {
+    for (const item of job.items) {
+      const li = document.createElement("li");
+      const name = document.createElement("span");
+      name.textContent = item.name;
+      name.title = item.message || "";
+      const label = document.createElement("span");
+      label.className = `ws-badge ws-${item.status}`;
+      label.textContent = WS_LABELS[item.status] || item.status;
+      const bar = document.createElement("progress");
+      bar.max = 100;
+      bar.value = ["updated", "up-to-date"].includes(item.status) ? 100 : item.progress || 0;
+      li.append(name, label, bar);
+      list.appendChild(li);
+    }
+  }
+  if (ui.mods) renderMods();
+}
+
+function applyWorkshopState(result) {
+  const wasRunning = ui.ws.running;
+  ui.ws.running = !!(result && result.running);
+  ui.ws.job = (result && result.job) || ui.ws.job;
+  for (const item of (ui.ws.job && ui.ws.job.items) || []) ui.ws.byId[String(item.id)] = item;
+  renderWorkshop();
+  clearTimeout(ui.ws.timer);
+  if (ui.ws.running) {
+    ui.ws.timer = setTimeout(refreshWorkshop, 1000);
+    return;
+  }
+  if (wasRunning) {
+    for (const resolve of ui.ws.waiters.splice(0)) resolve(ui.ws.job);
+    if (ui.ws.job && ui.ws.job.action !== "check" && ui.tab === "mods") { ui.mods = null; loadMods(); }
+  }
+}
+
+async function refreshWorkshop() {
+  try { applyWorkshopState(await api("/api/workshop-job")); }
+  catch { if (ui.ws.running) ui.ws.timer = setTimeout(refreshWorkshop, 2000); }
+}
+
+// Starts a Steam job and resolves with its final report once Steam has finished.
+async function startWorkshopJob(action, ids) {
+  const result = await api("/api/workshop-job", { method: "POST", json: { action, ids } });
+  const finished = new Promise((resolve) => ui.ws.waiters.push(resolve));
+  ui.ws.running = false;
+  ui.ws.job = null;
+  applyWorkshopState(Object.assign({}, result, { running: true }));
+  return finished;
+}
+
+function runWorkshopAction(action, ids, confirmText) {
+  if (confirmText && !confirm(confirmText)) return;
+  startWorkshopJob(action, ids)
+    .then((job) => { if (job && job.message) toast(job.message, job.state === "failed"); })
+    .catch((e) => toast(e.message, true));
+}
+
+function maybeAutoCheck() {
+  if (ui.ws.autoChecked || ui.ws.running || !(ui.state && ui.state.modUpdates)) return;
+  const ids = workshopIds();
+  if (!ids.length) return;
+  const job = ui.ws.job;
+  const last = job && job.finishedAt ? new Date(job.finishedAt).getTime() : 0;
+  if (Date.now() - last < WS_AUTO_CHECK_MS && job && job.action === "check") return;
+  ui.ws.autoChecked = true;
+  startWorkshopJob("check", ids).catch(() => { /* shown in the status line */ });
+}
+
+function workshopControls(id, modName) {
+  const row = document.createElement("div");
+  row.className = "ws-row";
+  const item = ui.ws.byId[id];
+  if (item) {
+    const badge = document.createElement("span");
+    badge.className = `ws-badge ws-${item.status}`;
+    badge.textContent = (WS_LABELS[item.status] || item.status) + (item.status === "downloading" ? ` ${item.progress || 0}%` : "");
+    if (item.message) badge.title = item.message;
+    row.appendChild(badge);
+  }
+  if (item && (item.status === "outdated" || item.status === "missing")) {
+    const update = document.createElement("button");
+    update.type = "button";
+    update.className = "tiny";
+    update.textContent = item.status === "missing" ? "Download" : "Update";
+    update.disabled = wsBlocked();
+    update.addEventListener("click", () => runWorkshopAction("update", [id]));
+    row.appendChild(update);
+  }
+  const resub = document.createElement("button");
+  resub.type = "button";
+  resub.className = "tiny";
+  resub.textContent = "Resubscribe";
+  resub.disabled = wsBlocked();
+  resub.title = "Unsubscribe, let Steam delete it, then subscribe and download a fresh copy";
+  resub.addEventListener("click", () => runWorkshopAction("resubscribe", [id], `Resubscribe to ${modName}? Steam deletes it and downloads a fresh copy.`));
+  row.appendChild(resub);
+  const page = document.createElement("button");
+  page.type = "button";
+  page.className = "tiny";
+  page.textContent = "Workshop page";
+  page.addEventListener("click", () => act(() => api("/api/workshop", { method: "POST", json: { id } }), "Opening Steam"));
+  row.appendChild(page);
+  return row;
+}
+
+async function loadMods() {
+  $("mods-loading").hidden = false;
+  $("mods-loading").textContent = "Reading your mods… this can take a few seconds.";
+  $("mods").innerHTML = "";
+  try {
+    const [mods, config] = await Promise.all([api("/api/mods"), api("/api/config")]);
+    ui.mods = mods;
+    ui.modsConfig = JSON.parse(config.launcher);
+    ui.excluded = new Set((ui.modsConfig.excludeMods || []).map((e) => String(e)));
+    renderMods();
+    $("mods-loading").hidden = true;
+    await refreshWorkshop();
+    maybeAutoCheck();
+  } catch (e) {
+    $("mods-loading").textContent = `Couldn't read mods: ${e.message}`;
+  }
+}
+
+function isExcluded(name, id) {
+  for (const e of ui.excluded) {
+    if (e === id || modKey(e) === modKey(name)) return true;
+  }
+  return false;
+}
+
+function renderMods() {
+  const list = $("mods");
+  list.innerHTML = "";
+  const m = ui.mods;
+  const loaded = new Set([...(m.client || []), ...(m.serverOnly || [])].map((x) => modKey(x.name)));
+  let order = 1;
+  const add = (mod, kind, id) => {
+    const li = document.createElement("li");
+    const num = document.createElement("span");
+    num.className = "order";
+    num.textContent = kind === "excluded" ? "" : String(order++);
+    li.appendChild(num);
+
+    const box = document.createElement("input");
+    box.type = "checkbox";
+    box.checked = !isExcluded(mod.name, id);
+    box.setAttribute("aria-label", `Load ${mod.name}`);
+    box.disabled = mod.name === "@DayZSolo";
+    box.addEventListener("change", () => {
+      for (const e of [...ui.excluded]) if (e === id || modKey(e) === modKey(mod.name)) ui.excluded.delete(e);
+      if (!box.checked) ui.excluded.add(mod.name);
+      const excluded = [...ui.excluded];
+      scheduleSave("mods", (l) => { l.excludeMods = excluded; return { launcher: true }; }, 300);
+    });
+    li.appendChild(box);
+
+    const info = document.createElement("div");
+    const name = document.createElement("div");
+    name.className = "name";
+    name.textContent = mod.name;
+    if (kind === "server") name.insertAdjacentHTML("beforeend", '<span class="badge">server only</span>');
+    if (kind === "excluded") {
+      name.insertAdjacentHTML("beforeend", isExcluded(mod.name, id)
+        ? '<span class="badge">excluded</span>'
+        : '<span class="badge">not loaded</span>');
+    }
+    info.appendChild(name);
+    if (/^\d+$/.test(id || "")) info.appendChild(workshopControls(id, mod.name));
+    if (mod.dependsOn && mod.dependsOn.length) {
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = `Loads after ${mod.dependsOn.join(", ")}`;
+      info.appendChild(meta);
+    }
+    if (mod.missing && mod.missing.length) {
+      const miss = document.createElement("div");
+      miss.className = "missing";
+      miss.textContent = `Needs something you don't have: ${mod.missing.slice(0, 5).join(", ")} - check its Workshop page for "Required items".`;
+      info.appendChild(miss);
+    }
+    li.appendChild(info);
+    list.appendChild(li);
+  };
+  const idFor = (name) => {
+    const w = (m.workshop || []).find((x) => modKey(x.name) === modKey(name));
+    return w ? String(w.id) : "";
+  };
+  for (const mod of m.client || []) add(mod, "client", idFor(mod.name));
+  for (const mod of m.serverOnly || []) add(mod, "server", idFor(mod.name));
+  for (const w of m.workshop || []) {
+    if (!loaded.has(modKey(w.name))) add({ name: w.name }, "excluded", String(w.id));
+  }
+  if (!list.children.length) list.innerHTML = '<li class="hint">No mods found. Subscribe to mods on the Steam Workshop.</li>';
+}
+
+/* ---------- Co-op ---------- */
+
+const INVITE_PREFIX = "DZSOLO1-";
+ui.coop = { publicIp: "", addressKey: "", invite: null };
+
+function toBase64Url(text) {
+  const bytes = new TextEncoder().encode(text);
+  let binary = "";
+  bytes.forEach((b) => { binary += String.fromCharCode(b); });
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+function fromBase64Url(text) {
+  let data = text.replace(/-/g, "+").replace(/_/g, "/");
+  while (data.length % 4) data += "=";
+  const binary = atob(data);
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function makeInvite(info, address) {
+  const payload = { a: address, p: info.port, pw: info.password, m: info.map, h: info.host, v: info.version, mods: info.mods || [] };
+  return INVITE_PREFIX + toBase64Url(JSON.stringify(payload));
+}
+
+function readInvite(code) {
+  const text = code.replace(/\s+/g, "");
+  if (!text) return null;
+  if (!text.startsWith(INVITE_PREFIX)) throw new Error(`That isn't a DayZ Solo invite code (they start with ${INVITE_PREFIX}).`);
+  let payload;
+  try { payload = JSON.parse(fromBase64Url(text.slice(INVITE_PREFIX.length))); }
+  catch { throw new Error("The invite code is damaged - ask your friend to copy it again."); }
+  if (!payload || typeof payload.a !== "string" || !payload.a) throw new Error("The invite code has no address in it.");
+  return payload;
+}
+
+function coopAddresses(info) {
+  const list = (info.addresses || []).map((a) => ({ kind: a.kind, address: a.address }));
+  if (ui.coop.publicIp) list.push({ kind: "Public IP (ports forwarded)", address: ui.coop.publicIp });
+  return list;
+}
+
+const ADDRESS_HINTS = {
+  "Tailscale": "Friends must be on your tailnet (or you shared this PC with them in Tailscale).",
+  "ZeroTier": "Friends must have joined your ZeroTier network and been authorised.",
+  "Radmin VPN": "Friends must be in your Radmin VPN network.",
+  "Home network": "Only works for players on the same home network as you.",
+  "Internet": "This PC has a public address. Friends connect directly if the firewall allows it.",
+  "Public IP (ports forwarded)": "Forward UDP 2302-2305 in your router to this PC, or friends can't reach it.",
+};
+
+function renderCoop() {
+  const s = ui.state || {};
+  const info = s.coop;
+  $("coop-host").hidden = !info;
+  $("coop-host-off").hidden = !!info;
+  $("coop-host-off").innerHTML = s.coopSetting
+    ? "Co-op is on. Press <strong>Play</strong> or <strong>Start server only</strong> on the Dashboard; the invite code appears here once the server is up."
+    : "Co-op is off. Turn on <strong>Host co-op</strong> under Settings &gt; Co-op, then press Play on the Dashboard.";
+  $("join-go").disabled = !!s.clientRunning || ui.ws.joinWaiting || ui.ws.running;
+  $("join-status").textContent = s.joinedHost ? `Playing on ${s.joinedHost}` : "";
+  if (!info) { ui.coop.invite = null; return; }
+
+  const select = $("coop-address");
+  const addresses = coopAddresses(info);
+  const key = addresses.map((a) => a.address).join("|");
+  if (select.dataset.key !== key) {
+    const previous = select.value || ui.prefs.coopAddress || "";
+    select.dataset.key = key;
+    select.innerHTML = "";
+    addresses.forEach((a) => select.add(new Option(`${a.kind}: ${a.address}`, a.address)));
+    if (!addresses.length) select.add(new Option("No address found - use your public IP", ""));
+    if (addresses.some((a) => a.address === previous)) select.value = previous;
+  }
+  const chosen = addresses.find((a) => a.address === select.value);
+  $("coop-password").textContent = info.password;
+  $("coop-slots").textContent = `${info.port} · up to ${info.maxPlayers} players`;
+  const mods = info.mods || [];
+  $("coop-mods").textContent = `${mods.length} mod${mods.length === 1 ? "" : "s"} in the code`;
+  $("coop-address-hint").textContent = chosen ? ADDRESS_HINTS[chosen.kind] || "" : "Press Use my public IP and forward the ports, or install Tailscale.";
+  const invite = chosen ? makeInvite(info, chosen.address) : "";
+  if ($("coop-invite").value !== invite) $("coop-invite").value = invite;
+  $("coop-copy").disabled = !invite;
+}
+
+function renderJoinSummary() {
+  const out = $("join-summary");
+  try {
+    const invite = readInvite($("join-code").value);
+    ui.coop.invite = invite;
+    if (!invite) { out.textContent = ""; return; }
+    const mods = invite.mods || [];
+    out.textContent = `${invite.h || "Your friend"}'s world on ${invite.m || "their map"} at ${invite.a}:${invite.p}, ${mods.length} mod${mods.length === 1 ? "" : "s"}${invite.v ? `, DayZ Solo ${invite.v}` : ""}.`;
+  } catch (e) {
+    ui.coop.invite = null;
+    out.textContent = e.message;
+  }
+}
+
+function renderJoinResult(result) {
+  const box = $("join-result");
+  box.innerHTML = "";
+  if (!result) return;
+  const lines = [];
+  if (result.ok) { const n = (result.mods || []).length; lines.push(["ok", `DayZ is starting with ${n} mod${n === 1 ? "" : "s"}. See you in game.`]); }
+  else if (result.error) lines.push(["error", result.error]);
+  for (const w of result.warnings || []) lines.push(["warn", w]);
+  for (const [kind, text] of lines) {
+    const p = document.createElement("p");
+    p.className = kind === "ok" ? "hint" : "notice";
+    p.style.margin = "0 0 8px";
+    p.textContent = text;
+    box.appendChild(p);
+  }
+  const missing = result.missing || [];
+  if (!missing.length) return;
+  const intro = document.createElement("p");
+  intro.textContent = "Subscribe to these, wait for Steam to finish downloading, then press Join again:";
+  intro.style.margin = "0 0 6px";
+  box.appendChild(intro);
+  const list = document.createElement("ul");
+  list.className = "mods";
+  for (const mod of missing) {
+    const li = document.createElement("li");
+    const name = document.createElement("div");
+    name.className = "name";
+    name.style.flex = "1";
+    name.textContent = mod.name;
+    li.appendChild(name);
+    if (mod.id) {
+      const open = document.createElement("button");
+      open.textContent = "Subscribe & download";
+      open.title = "Steam subscribes to it and downloads it now";
+      open.addEventListener("click", () => runWorkshopAction("update", [String(mod.id)]));
+      li.appendChild(open);
+    } else {
+      const ask = document.createElement("span");
+      ask.className = "hint";
+      ask.textContent = "Not on the Workshop - ask your friend for it";
+      li.appendChild(ask);
+    }
+    list.appendChild(li);
+  }
+  box.appendChild(list);
+}
+
+async function joinFriend() {
+  let invite;
+  try { invite = readInvite($("join-code").value); } catch (e) { toast(e.message, true); return; }
+  let payload;
+  if (invite) {
+    payload = { address: invite.a, port: invite.p, password: invite.pw || "", version: invite.v || "", mods: invite.mods || [] };
+  } else {
+    const address = $("join-address").value.trim();
+    if (!address) { toast("Paste an invite code or enter your friend's address", true); return; }
+    payload = { address, port: Number($("join-port").value) || 2302, password: $("join-password").value.trim(), ownMods: true };
+  }
+  $("join-go").disabled = true;
+  renderJoinResult(null);
+  const serverBusy = ui.state && ui.state.phase !== "stopped";
+  if (ui.state && ui.state.modUpdates && !serverBusy) {
+    const ids = invite
+      ? (invite.mods || []).map((m) => String(m.id || "")).filter((id) => /^\d+$/.test(id))
+      : await ownWorkshopIds();
+    if (ids.length) {
+      ui.ws.joinWaiting = true;
+      $("join-status").textContent = "Getting the mods ready through Steam…";
+      let job = null;
+      try {
+        job = await startWorkshopJob("update", ids);
+      } catch (e) {
+        ui.ws.joinWaiting = false;
+        $("join-status").textContent = "";
+        renderJoinResult({ ok: false, error: e.message });
+        $("join-go").disabled = false;
+        return;
+      }
+      ui.ws.joinWaiting = false;
+      const failed = ((job && job.items) || []).filter((i) => i.status === "failed" || i.status === "removed");
+      if (failed.length) {
+        $("join-status").textContent = "";
+        renderJoinResult({ ok: false, error: `Steam couldn't get ${failed.length} mod${failed.length === 1 ? "" : "s"} ready.`, missing: failed.map((i) => ({ name: `${i.name} - ${i.message || WS_LABELS[i.status]}`, id: i.id })), warnings: [] });
+        const anyway = document.createElement("button");
+        anyway.textContent = "Join anyway";
+        anyway.addEventListener("click", () => { anyway.remove(); sendJoin(Object.assign({}, payload, { skipUpdates: true })); });
+        $("join-result").appendChild(anyway);
+        $("join-go").disabled = false;
+        return;
+      }
+    }
+  }
+  await sendJoin(Object.assign({}, payload, { skipUpdates: true }), serverBusy && ui.state.modUpdates
+    ? ["Your own server is running, so mods weren't updated through Steam first."] : []);
+}
+
+async function sendJoin(payload, notes) {
+  $("join-go").disabled = true;
+  $("join-status").textContent = "Checking mods…";
+  try {
+    const result = await api("/api/join-friend", { method: "POST", json: payload });
+    if (notes && notes.length) result.warnings = (result.warnings || []).concat(notes);
+    renderJoinResult(result);
+    if (result.ok) toast(`Joining ${payload.address}`);
+  } catch (e) {
+    renderJoinResult({ ok: false, error: e.message });
+  } finally {
+    $("join-status").textContent = "";
+    await refreshState();
+  }
+}
+
+function newCoopPassword() {
+  const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const values = new Uint32Array(10);
+  crypto.getRandomValues(values);
+  return Array.from(values, (v) => chars[v % chars.length]).join("");
+}
+
+/* ---------- Trader ---------- */
+
+const SHOP_CATEGORIES = ["Weapons", "Magazines", "Ammo", "Attachments", "Explosives", "Medical", "Clothing", "Storage", "Food & Drink", "Tools & Misc", "Vehicle Parts", "Vehicles", "Boats"];
+const SHOP_PRICES = { "Weapons": 2500, "Magazines": 300, "Ammo": 120, "Attachments": 500, "Explosives": 800, "Medical": 150, "Clothing": 250, "Storage": 600, "Food & Drink": 60, "Tools & Misc": 200, "Vehicle Parts": 400, "Vehicles": 15000, "Boats": 8000 };
+const NPC_KINDS = { "Weapons": [1500, 600], "Magazines": [150, 60], "Ammo": [60, 25], "Attachments": [300, 120], "Explosives": [600, 240], "Clothing": [150, 60], "Storage": [400, 160], "Food & Drink": [40, 15], "Tools & Misc": [120, 50], "Vehicle Parts": [400, 160] };
+const ITEMS_PER_PAGE = 50;
+
+ui.trader = { loaded: false, shop: null, auto: null, autoItems: true, listing: null, page: 0, scanning: false, cash: null, atm: null, minutes: 0 };
+
+function cashClasses() {
+  return new Set(((ui.trader.listing && ui.trader.listing.cash) || []).map((b) => b.ClassName));
+}
+
+function defaultHidden(className) {
+  const list = (ui.trader.listing && ui.trader.listing.defaultHidden) || ["QoL_Bitcoin"];
+  return list.includes(className);
+}
+
+function isNumber(v) { return typeof v === "number" && isFinite(v); }
+function shopPrice(value) { return Math.max(1, Math.round(value / 10) * 10); }
+
+function categoryPlan(shop) {
+  const plan = [];
+  const seen = new Set();
+  for (const entry of shop.categories || []) {
+    const id = entry && String(entry.id || "").trim();
+    if (!id || seen.has(id.toLowerCase())) continue;
+    seen.add(id.toLowerCase());
+    const sell = entry.sellPercent;
+    plan.push({ id, name: String(entry.name || "").trim() || id, hidden: !!entry.hidden, sellPercent: isNumber(sell) && sell >= 0 ? Math.min(100, sell) : null });
+  }
+  for (const id of SHOP_CATEGORIES) {
+    if (seen.has(id.toLowerCase())) continue;
+    seen.add(id.toLowerCase());
+    plan.push({ id, name: id, hidden: false, sellPercent: null });
+  }
+  return plan;
+}
+
+function defaultBuy(shop, kind, rarity) {
+  let base = SHOP_PRICES[kind];
+  const custom = (shop.prices || {})[kind];
+  if (isNumber(custom) && custom > 0) base = custom;
+  if (base == null) base = 200;
+  const factor = shop.rarityPricing === false ? 1 : rarity;
+  const multiplier = isNumber(shop.priceMultiplier) && shop.priceMultiplier > 0 ? shop.priceMultiplier : 1;
+  return shopPrice(base * factor * multiplier);
+}
+
+function itemView(item) {
+  const shop = ui.trader.shop;
+  const ov = shop.items[item.c] || {};
+  const plan = ui.trader.plan;
+  const ids = ui.trader.planIds;
+  let catId = item.k;
+  if (ov.category && ids.has(ov.category)) catId = ov.category;
+  if (!ids.has(catId)) catId = "Tools & Misc";
+  const cat = plan.find((c) => c.id === catId);
+  const autoBuy = defaultBuy(shop, item.k, item.r);
+  const buy = isNumber(ov.buy) && ov.buy >= 1 ? Math.round(ov.buy) : autoBuy;
+  const pct = cat && cat.sellPercent != null ? cat.sellPercent : (isNumber(shop.sellPercent) && shop.sellPercent >= 0 ? shop.sellPercent : 40);
+  const autoSell = Math.min(buy, Math.round((buy * pct) / 100));
+  const sell = isNumber(ov.sell) && ov.sell >= 0 ? Math.min(buy, Math.round(ov.sell)) : autoSell;
+  const hidden = typeof ov.hidden === "boolean" ? ov.hidden : defaultHidden(item.c);
+  return { catId, buy, sell, autoBuy, autoSell, hidden, sellOnly: !!ov.sellOnly, perPiece: !!ov.perPiece && !item.v, changed: Object.keys(ov).length > 0 };
+}
+
+function refreshPlan() {
+  const shop = ui.trader.shop;
+  ui.trader.plan = categoryPlan(shop);
+  shop.categories = ui.trader.plan.map((c) => ({ id: c.id, name: c.name, hidden: c.hidden, sellPercent: c.sellPercent }));
+  ui.trader.planIds = new Set(ui.trader.plan.map((c) => c.id));
+}
+
+function markTraderDirty() {
+  if (!ui.trader.loaded) return;
+  scheduleSave("trader", applyTrader, 800);
+}
+
+function setOverride(className, changes) {
+  const items = ui.trader.shop.items;
+  const ov = Object.assign({}, items[className] || {}, changes);
+  for (const k of Object.keys(ov)) if (ov[k] === undefined || ov[k] === null) delete ov[k];
+  if (Object.keys(ov).length) items[className] = ov;
+  else delete items[className];
+}
+
+async function loadTrader(force) {
+  if (ui.trader.loaded && !force) { renderTrader(); return; }
+  await flushSaves();
+  try {
+    const config = JSON.parse((await api("/api/config")).launcher);
+    const shop = JSON.parse(JSON.stringify(config.shop || {}));
+    shop.prices = Object.assign({}, shop.prices || {});
+    shop.items = Object.assign({}, shop.items || {});
+    for (const [className, price] of Object.entries(shop.itemPrices || {})) {
+      if (isNumber(price) && price >= 1 && !(shop.items[className] && isNumber(shop.items[className].buy))) {
+        shop.items[className] = Object.assign({}, shop.items[className] || {}, { buy: Math.round(price) });
+      }
+    }
+    shop.itemPrices = {};
+    ui.trader.shop = shop;
+    ui.trader.auto = JSON.parse(JSON.stringify(config.autoTraderPrices || {}));
+    ui.trader.autoItems = config.autoTraderItems !== false;
+    ui.trader.cash = Object.assign({ enabled: true, currency: "dollar", values: {} }, JSON.parse(JSON.stringify(config.cash || {})));
+    ui.trader.cash.values = Object.assign({}, ui.trader.cash.values || {});
+    ui.trader.atm = Object.assign({ atTrader: true, traderHeading: 270, machines: [] }, JSON.parse(JSON.stringify(config.atm || {})));
+    ui.trader.atm.machines = Array.isArray(ui.trader.atm.machines) ? ui.trader.atm.machines : [];
+    ui.trader.minutes = isNumber(config.miningMinutesPerBitcoin) ? config.miningMinutesPerBitcoin : 0;
+    refreshPlan();
+    ui.trader.loaded = true;
+    if (!ui.trader.listing) ui.trader.listing = await api("/api/shop-items");
+  } catch (e) {
+    toast(`Couldn't load the trader settings: ${e.message}`, true);
+    return;
+  }
+  renderTrader();
+}
+
+function renderTrader() {
+  if (!ui.trader.loaded) return;
+  const shop = ui.trader.shop;
+  $("t-enabled").checked = !!shop.enabled;
+  $("t-zone").checked = !!shop.requireTraderZone;
+  $("t-rarity").checked = shop.rarityPricing !== false;
+  $("t-balance").value = isNumber(shop.startingBalance) ? shop.startingBalance : 2000;
+  $("t-sell").value = isNumber(shop.sellPercent) ? shop.sellPercent : 40;
+  $("t-multiplier").value = isNumber(shop.priceMultiplier) ? shop.priceMultiplier : 1;
+  $("t-autoTraderItems").checked = ui.trader.autoItems;
+  renderTraderCategories();
+  renderTraderItems();
+  renderNpcPrices();
+  renderMoney();
+}
+
+function headingName(degrees) {
+  const names = ["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"];
+  const d = ((Math.round(degrees) % 360) + 360) % 360;
+  return `${d}° (${names[Math.round(d / 45) % 8]})`;
+}
+
+function renderMoney() {
+  const cash = ui.trader.cash;
+  const atm = ui.trader.atm;
+  $("m-cash").checked = cash.enabled !== false;
+  $("m-currency").value = ["dollar", "ruble", "euro", "mark"].includes(cash.currency) ? cash.currency : "dollar";
+  $("m-atm-trader").checked = atm.atTrader !== false;
+  $("m-atm-heading").value = isNumber(atm.traderHeading) ? atm.traderHeading : 270;
+  $("m-minutes").value = ui.trader.minutes || 0;
+
+  const bills = (ui.trader.listing && ui.trader.listing.cash) || [];
+  const body = $("m-bills");
+  body.innerHTML = "";
+  for (const bill of bills) {
+    const tr = document.createElement("tr");
+    const name = document.createElement("div");
+    name.className = "item-name";
+    name.textContent = bill.ClassName;
+    tr.appendChild(cell(name));
+    const custom = cash.values[bill.ClassName];
+    tr.appendChild(cell(numberInput(isNumber(custom) ? custom : null, bill.Value, `Worth of ${bill.ClassName}`, (value) => {
+      if (value == null || !(value >= 1)) delete cash.values[bill.ClassName];
+      else cash.values[bill.ClassName] = Math.round(value);
+      markTraderDirty();
+    }, { min: "1", step: "1" })));
+    body.appendChild(tr);
+  }
+  $("m-bills-hint").textContent = !ui.trader.listing
+    ? "Scan items (above) to find the bills your money mod adds."
+    : bills.length
+      ? `Found ${bills.length} bills on the last scan; worth comes from the number in each name. They are kept out of the item list. Rescan after changing the currency.`
+      : "No bills found. Subscribe to CJ187-MoreMoney (or another money mod), let Steam download it, then Rescan items.";
+
+  const machines = $("m-atms");
+  machines.innerHTML = "";
+  if (!atm.machines.length) machines.innerHTML = '<tr><td colspan="4" class="hint">None placed yet.</td></tr>';
+  atm.machines.forEach((m, index) => {
+    const tr = document.createElement("tr");
+    tr.appendChild(cell(`ATM ${index + 1}`));
+    const pos = cell(`${Math.round(m.x)}, ${Math.round(m.z)}`);
+    pos.className = "num";
+    tr.appendChild(pos);
+    tr.appendChild(cell(headingName(m.heading || 0)));
+    const actions = document.createElement("div");
+    actions.className = "row nowrap";
+    const turn = document.createElement("button");
+    turn.type = "button";
+    turn.textContent = "Turn around";
+    turn.addEventListener("click", () => { m.heading = ((m.heading || 0) + 180) % 360; markTraderDirty(); renderMoney(); });
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "Remove";
+    remove.addEventListener("click", () => { atm.machines.splice(index, 1); markTraderDirty(); renderMoney(); });
+    actions.append(turn, remove);
+    tr.appendChild(cell(actions));
+    machines.appendChild(tr);
+  });
+}
+
+function numberInput(value, placeholder, label, onChange, opts) {
+  const input = document.createElement("input");
+  input.type = "number";
+  input.min = (opts && opts.min) != null ? opts.min : "0";
+  if (opts && opts.max != null) input.max = opts.max;
+  input.step = (opts && opts.step) || "10";
+  input.value = value == null ? "" : value;
+  input.placeholder = placeholder == null ? "" : String(placeholder);
+  input.setAttribute("aria-label", label);
+  input.className = "num-input";
+  input.addEventListener("change", () => onChange(input.value.trim() === "" ? null : Number(input.value)));
+  return input;
+}
+
+function cell(child) {
+  const td = document.createElement("td");
+  if (typeof child === "string") td.textContent = child;
+  else if (child) td.appendChild(child);
+  return td;
+}
+
+function hiddenChange(item, wantHidden) {
+  return { hidden: wantHidden === defaultHidden(item.c) ? undefined : wantHidden };
+}
+
+function categoryCounts() {
+  const counts = {};
+  const cash = cashClasses();
+  for (const item of (ui.trader.listing && ui.trader.listing.items) || []) {
+    if (cash.has(item.c)) continue;
+    const v = itemView(item);
+    if (v.hidden) continue;
+    counts[v.catId] = (counts[v.catId] || 0) + 1;
+  }
+  return counts;
+}
+
+function renderTraderCategories() {
+  const shop = ui.trader.shop;
+  const body = $("t-categories");
+  body.innerHTML = "";
+  const counts = ui.trader.listing ? categoryCounts() : null;
+  const plan = ui.trader.plan;
+  plan.forEach((cat, index) => {
+    const tr = document.createElement("tr");
+    const order = document.createElement("div");
+    order.className = "row nowrap";
+    for (const [label, delta] of [["↑", -1], ["↓", 1]]) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = label;
+      b.className = "small";
+      b.setAttribute("aria-label", `Move ${cat.name} ${delta < 0 ? "up" : "down"}`);
+      b.disabled = (delta < 0 && index === 0) || (delta > 0 && index === plan.length - 1);
+      b.addEventListener("click", () => {
+        const list = shop.categories;
+        const [moved] = list.splice(index, 1);
+        list.splice(index + delta, 0, moved);
+        refreshPlan(); markTraderDirty(); renderTraderCategories(); renderTraderItems();
+      });
+      order.appendChild(b);
+    }
+    tr.appendChild(cell(order));
+
+    const name = document.createElement("input");
+    name.type = "text";
+    name.value = cat.name;
+    name.maxLength = 40;
+    name.setAttribute("aria-label", `Name of ${cat.id}`);
+    name.addEventListener("change", () => {
+      shop.categories[index].name = name.value.trim() || cat.id;
+      refreshPlan(); markTraderDirty(); renderTraderItems(); fillCategorySelects();
+    });
+    tr.appendChild(cell(name));
+
+    const builtin = SHOP_CATEGORIES.includes(cat.id);
+    if (builtin) {
+      const custom = shop.prices[cat.id];
+      tr.appendChild(cell(numberInput(isNumber(custom) ? custom : null, SHOP_PRICES[cat.id], `Base price of ${cat.name}`, (v) => {
+        if (v == null || !(v > 0)) delete shop.prices[cat.id];
+        else shop.prices[cat.id] = Math.round(v);
+        markTraderDirty(); renderTraderItems();
+      })));
+    } else {
+      tr.appendChild(cell("-"));
+    }
+    tr.appendChild(cell(numberInput(cat.sellPercent, "", `Trader pays percent for ${cat.name}`, (v) => {
+      shop.categories[index].sellPercent = v == null || !(v >= 0) ? null : Math.min(100, v);
+      refreshPlan(); markTraderDirty(); renderTraderItems();
+    }, { max: "100", step: "5" })));
+    const count = cell(counts ? String(counts[cat.id] || 0) : "–");
+    count.className = "num";
+    tr.appendChild(count);
+
+    const show = document.createElement("input");
+    show.type = "checkbox";
+    show.checked = !cat.hidden;
+    show.setAttribute("aria-label", `Show ${cat.name}`);
+    show.addEventListener("change", () => { shop.categories[index].hidden = !show.checked; refreshPlan(); markTraderDirty(); });
+    tr.appendChild(cell(show));
+
+    if (builtin) {
+      tr.appendChild(cell(""));
+    } else {
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.textContent = "Remove";
+      remove.addEventListener("click", () => {
+        if (!confirm(`Remove "${cat.name}"? Its items go back to their own categories.`)) return;
+        shop.categories.splice(index, 1);
+        for (const [className, ov] of Object.entries(shop.items)) if (ov.category === cat.id) setOverride(className, { category: undefined });
+        refreshPlan(); markTraderDirty(); renderTraderCategories(); renderTraderItems();
+      });
+      tr.appendChild(cell(remove));
+    }
+    body.appendChild(tr);
+  });
+  fillCategorySelects();
+}
+
+function fillCategorySelects() {
+  const plan = ui.trader.plan;
+  const filter = $("t-filter-cat");
+  const current = filter.value;
+  filter.innerHTML = "";
+  filter.add(new Option("All categories", ""));
+  for (const c of plan) filter.add(new Option(c.name, c.id));
+  const wanted = current || ui.prefs.traderCategory || "";
+  filter.value = plan.some((c) => c.id === wanted) ? wanted : "";
+  const bulk = $("t-bulk-cat");
+  const bulkCurrent = bulk.value;
+  bulk.innerHTML = "";
+  for (const c of plan) bulk.add(new Option(`Move to ${c.name}`, c.id));
+  if (plan.some((c) => c.id === bulkCurrent)) bulk.value = bulkCurrent;
+}
+
+function filteredItems() {
+  const listing = ui.trader.listing;
+  if (!listing || !listing.items) return [];
+  const search = $("t-search").value.trim().toLowerCase();
+  const category = $("t-filter-cat").value;
+  const mode = $("t-filter").value;
+  const result = [];
+  const cash = cashClasses();
+  for (const item of listing.items) {
+    if (cash.has(item.c)) continue;
+    if (search && !item.c.toLowerCase().includes(search)) continue;
+    const v = itemView(item);
+    if (category && v.catId !== category) continue;
+    if (mode === "changed" && !v.changed) continue;
+    if (mode === "hidden" && !v.hidden) continue;
+    if (mode === "modded" && !item.m) continue;
+    if (mode === "vehicles" && !item.v) continue;
+    result.push([item, v]);
+  }
+  return result;
+}
+
+function renderTraderItems() {
+  const listing = ui.trader.listing;
+  const empty = $("t-items-empty");
+  const box = $("t-items-box");
+  $("t-scan").disabled = ui.trader.scanning;
+  $("t-scan").textContent = ui.trader.scanning ? "Scanning…" : listing ? "Rescan items" : "Scan items";
+  if (!listing || !listing.items) {
+    box.hidden = true;
+    empty.hidden = false;
+    empty.textContent = ui.trader.scanning
+      ? "Reading the base game and your mods for everything the shop can sell. This takes up to a minute the first time…"
+      : "No item list yet. Press Scan items: it reads the base game and your mods (up to a minute the first time). Starting the server with the shop on also makes one.";
+    $("t-scan-info").textContent = "";
+    return;
+  }
+  empty.hidden = true;
+  box.hidden = false;
+  const when = listing.generatedAt ? new Date(listing.generatedAt) : null;
+  $("t-scan-info").textContent = `${listing.items.length} items${when && !isNaN(when) ? `, scanned ${when.toLocaleString()}` : ""}`;
+
+  const rows = filteredItems();
+  const pages = Math.max(1, Math.ceil(rows.length / ITEMS_PER_PAGE));
+  ui.trader.page = Math.min(ui.trader.page, pages - 1);
+  const start = ui.trader.page * ITEMS_PER_PAGE;
+  $("t-count").textContent = `${rows.length} item${rows.length === 1 ? "" : "s"} match`;
+  $("t-page").textContent = `Page ${ui.trader.page + 1} of ${pages}`;
+  $("t-prev").disabled = ui.trader.page === 0;
+  $("t-next").disabled = ui.trader.page >= pages - 1;
+  for (const id of ["t-bulk-move", "t-bulk-price", "t-bulk-hide", "t-bulk-show", "t-bulk-reset"]) $(id).disabled = rows.length === 0;
+
+  const body = $("t-items");
+  body.innerHTML = "";
+  if (!rows.length) body.innerHTML = '<tr><td colspan="7" class="hint">No items match.</td></tr>';
+  for (const [item, v] of rows.slice(start, start + ITEMS_PER_PAGE)) {
+    const tr = document.createElement("tr");
+    if (v.hidden) tr.className = "muted";
+    const name = document.createElement("div");
+    name.className = "item-name";
+    name.textContent = item.c;
+    if (item.v) name.insertAdjacentHTML("beforeend", '<span class="badge">vehicle</span>');
+    if (item.m) name.insertAdjacentHTML("beforeend", '<span class="badge">mod</span>');
+    tr.appendChild(cell(name));
+
+    const select = document.createElement("select");
+    select.setAttribute("aria-label", `Category of ${item.c}`);
+    for (const c of ui.trader.plan) select.add(new Option(c.name + (c.id === item.k ? " (default)" : ""), c.id));
+    select.value = v.catId;
+    select.addEventListener("change", () => {
+      setOverride(item.c, { category: select.value === item.k ? undefined : select.value });
+      markTraderDirty(); renderTraderItems(); renderTraderCategories();
+    });
+    tr.appendChild(cell(select));
+
+    const ov = ui.trader.shop.items[item.c] || {};
+    const buyInput = numberInput(isNumber(ov.buy) ? ov.buy : null, v.autoBuy, `Buy price of ${item.c}`, (value) => {
+      setOverride(item.c, { buy: value == null || !(value >= 1) ? undefined : Math.round(value) });
+      markTraderDirty(); renderTraderItems();
+    }, { min: "1" });
+    if (v.sellOnly) { buyInput.disabled = true; buyInput.title = "Sell only: the trader doesn't sell this"; }
+    tr.appendChild(cell(buyInput));
+    tr.appendChild(cell(numberInput(isNumber(ov.sell) ? ov.sell : null, v.autoSell, `Sell price of ${item.c}`, (value) => {
+      setOverride(item.c, { sell: value == null || !(value >= 0) ? undefined : Math.round(value) });
+      markTraderDirty(); renderTraderItems();
+    })));
+
+    const opts = document.createElement("div");
+    opts.className = "opts";
+    const flags = [["perPiece", "per piece", v.perPiece, !item.v], ["sellOnly", "sell only", v.sellOnly, true]];
+    for (const [key, text, checked, enabled] of flags) {
+      if (!enabled) continue;
+      const optLabel = document.createElement("label");
+      const box = document.createElement("input");
+      box.type = "checkbox";
+      box.checked = checked;
+      box.setAttribute("aria-label", `${text} for ${item.c}`);
+      box.addEventListener("change", () => {
+        setOverride(item.c, { [key]: box.checked ? true : undefined });
+        markTraderDirty(); renderTraderItems();
+      });
+      optLabel.append(box, text);
+      opts.appendChild(optLabel);
+    }
+    tr.appendChild(cell(opts));
+
+    const show = document.createElement("input");
+    show.type = "checkbox";
+    show.checked = !v.hidden;
+    show.setAttribute("aria-label", `Sell ${item.c} in the shop`);
+    show.addEventListener("change", () => {
+      setOverride(item.c, hiddenChange(item, !show.checked));
+      markTraderDirty(); renderTraderItems(); renderTraderCategories();
+    });
+    tr.appendChild(cell(show));
+
+    const reset = document.createElement("button");
+    reset.type = "button";
+    reset.textContent = "Reset";
+    reset.disabled = !v.changed;
+    reset.addEventListener("click", () => {
+      setOverride(item.c, { category: undefined, buy: undefined, sell: undefined, hidden: undefined, perPiece: undefined, sellOnly: undefined });
+      markTraderDirty(); renderTraderItems(); renderTraderCategories();
+    });
+    tr.appendChild(cell(reset));
+    body.appendChild(tr);
+  }
+}
+
+function bulkApply(label, fn) {
+  const rows = filteredItems();
+  if (!rows.length) return;
+  if (rows.length > 300 && !confirm(`${label} for ${rows.length} items?`)) return;
+  for (const [item, v] of rows) fn(item, v);
+  markTraderDirty();
+  renderTraderItems();
+  renderTraderCategories();
+  toast(`${label}: ${rows.length} item${rows.length === 1 ? "" : "s"}`);
+}
+
+function renderNpcPrices() {
+  const body = $("t-auto");
+  body.innerHTML = "";
+  for (const [kind, defaults] of Object.entries(NPC_KINDS)) {
+    const tr = document.createElement("tr");
+    tr.appendChild(cell(kind));
+    const current = Array.isArray(ui.trader.auto[kind]) ? ui.trader.auto[kind] : null;
+    [0, 1].forEach((i) => {
+      tr.appendChild(cell(numberInput(current && isNumber(current[i]) ? current[i] : null, defaults[i], `${i ? "Sell" : "Buy"} price for mod ${kind}`, (value) => {
+        const pair = Array.isArray(ui.trader.auto[kind]) ? ui.trader.auto[kind].slice() : defaults.slice();
+        pair[i] = value == null || !(value >= 0) ? defaults[i] : Math.round(value);
+        ui.trader.auto[kind] = pair;
+        markTraderDirty();
+      })));
+    });
+    body.appendChild(tr);
+  }
+}
+
+function readShopFields() {
+  const shop = ui.trader.shop;
+  shop.enabled = $("t-enabled").checked;
+  shop.requireTraderZone = $("t-zone").checked;
+  shop.rarityPricing = $("t-rarity").checked;
+  const balance = Number($("t-balance").value);
+  shop.startingBalance = balance >= 0 ? Math.round(balance) : 2000;
+  const sell = Number($("t-sell").value);
+  shop.sellPercent = $("t-sell").value.trim() !== "" && sell >= 0 ? Math.min(100, sell) : 40;
+  const multiplier = Number($("t-multiplier").value);
+  shop.priceMultiplier = multiplier > 0 ? Math.min(20, multiplier) : 1;
+  ui.trader.autoItems = $("t-autoTraderItems").checked;
+  if (ui.trader.cash) {
+    ui.trader.cash.enabled = $("m-cash").checked;
+    ui.trader.cash.currency = $("m-currency").value;
+    const heading = Number($("m-atm-heading").value);
+    ui.trader.atm.atTrader = $("m-atm-trader").checked;
+    ui.trader.atm.traderHeading = heading >= 0 ? Math.round(heading) % 360 : 270;
+    const minutes = Number($("m-minutes").value);
+    ui.trader.minutes = minutes > 0 ? Math.round(minutes) : 0;
+  }
+}
+
+function applyTrader(config) {
+  const shop = JSON.parse(JSON.stringify(ui.trader.shop));
+  for (const [className, ov] of Object.entries(shop.items)) if (!Object.keys(ov).length) delete shop.items[className];
+  config.shop = Object.assign({ prices: {}, itemPrices: {} }, shop);
+  config.autoTraderPrices = JSON.parse(JSON.stringify(ui.trader.auto));
+  config.autoTraderItems = ui.trader.autoItems;
+  config.cash = JSON.parse(JSON.stringify(ui.trader.cash));
+  config.atm = JSON.parse(JSON.stringify(ui.trader.atm));
+  config.miningMinutesPerBitcoin = ui.trader.minutes;
+  return { launcher: true };
+}
+
+async function scanTraderItems() {
+  ui.trader.scanning = true;
+  renderTraderItems();
+  try {
+    ui.trader.listing = await api("/api/shop-items?refresh=1");
+    toast(`Found ${ui.trader.listing.items.length} items`);
+  } catch (e) {
+    toast(`Scan failed: ${e.message}`, true);
+  } finally {
+    ui.trader.scanning = false;
+    renderTraderItems();
+    renderTraderCategories();
+    if (ui.trader.loaded) renderMoney();
+  }
+}
+
+/* ---------- Mod settings files ---------- */
+
+ui.profileFiles = { list: [], current: "", loaded: "" };
+
+async function loadProfileFiles() {
+  const select = $("pf-file");
+  try {
+    const result = await api("/api/profile-files");
+    ui.profileFiles.list = result.files || [];
+  } catch (e) {
+    ui.profileFiles.list = [];
+    toast(`Couldn't list the settings files: ${e.message}`, true);
+  }
+  const previous = select.value;
+  select.innerHTML = "";
+  if (!ui.profileFiles.list.length) select.add(new Option("No mod settings files yet - start the server once with your mods", ""));
+  else select.add(new Option("Pick a file…", ""));
+  for (const f of ui.profileFiles.list) select.add(new Option(`${f.path}  (${(f.size / 1024).toFixed(1)} KB)`, f.path));
+  const wanted = previous || ui.prefs.profileFile || "";
+  if (ui.profileFiles.list.some((f) => f.path === wanted)) {
+    select.value = wanted;
+    if (!previous) openProfileFile(wanted);
+  }
+}
+
+async function openProfileFile(relative) {
+  ui.profileFiles.current = relative;
+  $("pf-save").disabled = true;
+  const info = ui.profileFiles.list.find((f) => f.path === relative);
+  $("pf-note").hidden = !(info && info.note);
+  $("pf-note").textContent = info && info.note ? info.note : "";
+  if (!relative) { $("pf-text").value = ""; return; }
+  try {
+    const text = await api(`/api/profile-file?path=${encodeURIComponent(relative)}`);
+    $("pf-text").value = text;
+    ui.profileFiles.loaded = text;
+  } catch (e) {
+    toast(`Couldn't open ${relative}: ${e.message}`, true);
+  }
+}
+
+async function saveProfileFile() {
+  const relative = ui.profileFiles.current;
+  const text = $("pf-text").value;
+  try { JSON.parse(text); } catch (e) { toast(`Not valid JSON: ${e.message}`, true); return; }
+  try {
+    await api(`/api/profile-file?path=${encodeURIComponent(relative)}`, { method: "PUT", body: text, headers: { "Content-Type": "text/plain" } });
+    ui.profileFiles.loaded = text;
+    $("pf-save").disabled = true;
+    toast(`Saved ${relative} - it applies the next time the server starts`);
+  } catch (e) {
+    toast(e.message, true);
+  }
+}
+
+/* ---------- Settings ---------- */
+
+const LAUNCHER_FIELDS = {
+  playerName: "text", map: "text", lootMultiplier: "number", serverTimeAcceleration: "number",
+  serverNightTimeAcceleration: "number", stopServerWhenGameCloses: "bool", autoWorkshopMods: "bool",
+  moddedVehicles: "bool", enableMinimap: "bool", disable3rdPerson: "bool", disableCrosshair: "bool", useBattlEye: "bool", verifySignatures: "bool",
+};
+const LAUNCHER_DEFAULTS = {
+  stopServerWhenGameCloses: true, moddedVehicles: true, autoWorkshopMods: true, useBattlEye: true, verifySignatures: true,
+  lootMultiplier: 1, serverTimeAcceleration: 1, serverNightTimeAcceleration: 1, map: "chernarusplus", playerName: "Survivor",
+};
+
+function setField(id, type, value) {
+  const el = $(`s-${id}`);
+  if (type === "bool") el.checked = !!value;
+  else el.value = value == null ? "" : value;
+}
+
+function getField(id, type) {
+  const el = $(`s-${id}`);
+  if (type === "bool") return el.checked;
+  if (type === "number") return el.value.trim() === "" ? NaN : Number(el.value);
+  return el.value;
+}
+
+function addZoneRow(zone) {
+  const tr = document.createElement("tr");
+  const pos = zone.Position || [0, 0, 0];
+  const values = [zone.Name || "", Math.round(pos[0]), Math.round(pos[2]), zone.Radius || 150];
+  const labels = ["Name", "X", "Z", "Radius"];
+  values.forEach((v, i) => {
+    const td = document.createElement("td");
+    const input = document.createElement("input");
+    input.type = i === 0 ? "text" : "number";
+    input.value = v;
+    input.setAttribute("aria-label", `Safe zone ${labels[i]}`);
+    td.appendChild(input);
+    tr.appendChild(td);
+  });
+  const td = document.createElement("td");
+  const remove = document.createElement("button");
+  remove.type = "button";
+  remove.textContent = "Remove";
+  remove.addEventListener("click", () => { tr.remove(); scheduleSettingsSave(); });
+  td.appendChild(remove);
+  tr.appendChild(td);
+  $("zones").appendChild(tr);
+}
+
+async function loadSettings() {
+  const editsAtStart = ui.settingsEdits || 0;
+  try {
+    const config = await api("/api/config");
+    if (ui.config && (ui.settingsEdits || 0) !== editsAtStart) return;
+    ui.config = { launcher: JSON.parse(config.launcher), solo: JSON.parse(config.solo) };
+    $("raw-launcher").value = config.launcher;
+    $("raw-solo").value = config.solo;
+    const l = ui.config.launcher;
+    for (const [k, type] of Object.entries(LAUNCHER_FIELDS)) setField(k, type, k in l ? l[k] : LAUNCHER_DEFAULTS[k]);
+    $("s-foodMultiplier").value = (l.lootCategoryMultipliers && l.lootCategoryMultipliers.food) || 1;
+    const zombies = String(l.zombieMultiplier == null ? 1 : l.zombieMultiplier);
+    const zombieSelect = $("s-zombies");
+    if (![...zombieSelect.options].some((o) => o.value === zombies)) zombieSelect.add(new Option(`${Math.round(Number(zombies) * 100)}%`, zombies));
+    zombieSelect.value = zombies;
+    const cars = String(l.vehicleMultiplier == null ? 1 : l.vehicleMultiplier);
+    const carSelect = $("s-cars");
+    if (![...carSelect.options].some((o) => o.value === cars)) carSelect.add(new Option(`${cars}x`, cars));
+    carSelect.value = cars;
+    $("s-respawn").value = ["normal", "fast", "veryfast"].includes(l.lootRespawnSpeed) ? l.lootRespawnSpeed : "normal";
+    $("s-foodNoRot").checked = !!(l.globalsOverrides && String(l.globalsOverrides.FoodDecay) === "0");
+    $("s-modLoot").checked = !(l.modLoot && l.modLoot.enabled === false);
+    $("s-modUpdates").checked = !(l.modUpdates && l.modUpdates.checkBeforeLaunch === false);
+    $("s-modLootMultiplier").checked = !!(l.modLoot && l.modLoot.applyLootMultiplier);
+    const map = $("s-map");
+    if (l.map && ![...map.options].some((o) => o.value === l.map)) map.add(new Option(l.map, l.map));
+    map.value = l.map || "chernarusplus";
+
+    const s = ui.config.solo;
+    $("s-WelcomeMessage").value = s.WelcomeMessage || "";
+    $("s-ExtraStartingItems").value = (s.ExtraStartingItems || []).join(", ");
+    $("s-UseFixedSpawn").checked = !!s.UseFixedSpawn;
+    $("s-AlwaysDay").checked = !!s.AlwaysDay;
+    const gas = l.gasZones === false ? "off" : l.gasZones === true || l.gasZones == null ? "default" : String(l.gasZones);
+    $("s-gasMode").value = ["random", "off", "default"].includes(gas) ? gas : "default";
+    const coop = l.coop || {};
+    $("c-enabled").checked = !!coop.enabled;
+    $("c-slots").value = coop.maxPlayers || 4;
+    $("c-password").value = coop.password || "";
+    const bandits = l.bandits || {};
+    $("b-enabled").checked = !!bandits.enabled;
+    $("b-military").checked = bandits.militaryGear !== false;
+    $("b-groups").value = bandits.groups || 5;
+    $("b-size").value = bandits.groupSize || 3;
+    const acc = (bandits.accuracy || [0.25, 0.5])[1];
+    $("b-difficulty").value = acc <= 0.35 ? "easy" : acc >= 0.7 ? "hard" : "normal";
+    const parts = String(l.moddedVehiclePartChance == null ? 1 : l.moddedVehiclePartChance);
+    const partSelect = $("s-carParts");
+    if (![...partSelect.options].some((o) => o.value === parts)) partSelect.add(new Option(`${Math.round(Number(parts) * 100)}%`, parts));
+    partSelect.value = parts;
+    const spawn = s.FixedSpawnPosition || [0, 0, 0];
+    $("s-spawnX").value = spawn[0];
+    $("s-spawnZ").value = spawn[2];
+    $("zones").innerHTML = "";
+    for (const z of s.SafeZones || []) addZoneRow(z);
+    const ev = s.Events || {};
+    $("e-Enabled").checked = !!ev.Enabled;
+    $("e-HeliCrash").checked = !ev.HeliCrash || ev.HeliCrash.Enabled !== false;
+    $("e-Airdrop").checked = !ev.Airdrop || ev.Airdrop.Enabled !== false;
+    for (const k of ["MinIntervalMinutes", "MaxIntervalMinutes", "DespawnMinutes", "MaxActive"]) $(`e-${k}`).value = ev[k] == null ? "" : ev[k];
+  } catch (e) {
+    toast(`Couldn't load settings: ${e.message}`, true);
+  }
+}
+
+function collectSettings(l, s) {
+  for (const [k, type] of Object.entries(LAUNCHER_FIELDS)) {
+    const value = getField(k, type);
+    if (type === "number" && !(value > 0)) l[k] = k in l ? l[k] : LAUNCHER_DEFAULTS[k];
+    else if (type === "text" && !value.trim()) l[k] = k in l ? l[k] : LAUNCHER_DEFAULTS[k];
+    else l[k] = value;
+  }
+  const food = Number($("s-foodMultiplier").value);
+  if (food > 0) l.lootCategoryMultipliers = Object.assign({}, l.lootCategoryMultipliers || {}, { food });
+  l.lootRespawnSpeed = $("s-respawn").value;
+  l.modLoot = Object.assign({ exclude: [] }, l.modLoot || {}, { enabled: $("s-modLoot").checked, applyLootMultiplier: $("s-modLootMultiplier").checked });
+  l.modUpdates = Object.assign({ timeoutMinutes: 20 }, l.modUpdates || {}, { checkBeforeLaunch: $("s-modUpdates").checked });
+  l.zombieMultiplier = Number($("s-zombies").value);
+  l.vehicleMultiplier = Number($("s-cars").value);
+  l.globalsOverrides = Object.assign({}, l.globalsOverrides || {});
+  if ($("s-foodNoRot").checked) l.globalsOverrides.FoodDecay = 0;
+  else delete l.globalsOverrides.FoodDecay;
+  s.WelcomeMessage = $("s-WelcomeMessage").value;
+  s.ExtraStartingItems = $("s-ExtraStartingItems").value.split(",").map((x) => x.trim()).filter(Boolean);
+  s.UseFixedSpawn = $("s-UseFixedSpawn").checked;
+  s.AlwaysDay = $("s-AlwaysDay").checked;
+  l.gasZones = $("s-gasMode").value;
+  let coopPassword = $("c-password").value.replace(/[^A-Za-z0-9_-]/g, "").slice(0, 32);
+  if (coopPassword.length > 0 && coopPassword.length < 4) coopPassword = (l.coop && l.coop.password) || "";
+  l.coop = Object.assign({}, l.coop || {}, {
+    enabled: $("c-enabled").checked,
+    maxPlayers: Math.min(10, Math.max(2, Math.round(Number($("c-slots").value) || 4))),
+    password: coopPassword,
+  });
+  const difficulty = { easy: [[0.15, 0.35], 0.5], normal: [[0.25, 0.5], 0.7], hard: [[0.45, 0.75], 1.0] }[$("b-difficulty").value];
+  l.bandits = Object.assign({ behaviour: "ROAMING", respawnMinutes: 30, chance: 1.0, loadout: "" }, l.bandits || {}, {
+    enabled: $("b-enabled").checked,
+    militaryGear: $("b-military").checked,
+    groups: Math.max(1, Math.round(Number($("b-groups").value) || 5)),
+    groupSize: Math.max(1, Math.round(Number($("b-size").value) || 3)),
+    accuracy: difficulty[0],
+    damageMultiplier: difficulty[1],
+  });
+  l.moddedVehiclePartChance = Number($("s-carParts").value);
+  s.FixedSpawnPosition = [Number($("s-spawnX").value) || 0, 0, Number($("s-spawnZ").value) || 0];
+  s.SafeZones = [...$("zones").querySelectorAll("tr")].map((tr) => {
+    const inputs = tr.querySelectorAll("input");
+    return { Name: inputs[0].value || "Safe zone", Position: [Number(inputs[1].value) || 0, 0, Number(inputs[2].value) || 0], Radius: Number(inputs[3].value) || 150 };
+  });
+  s.Events = Object.assign({}, s.Events || {});
+  s.Events.Enabled = $("e-Enabled").checked;
+  s.Events.HeliCrash = Object.assign({}, s.Events.HeliCrash || {}, { Enabled: $("e-HeliCrash").checked });
+  s.Events.Airdrop = Object.assign({}, s.Events.Airdrop || {}, { Enabled: $("e-Airdrop").checked });
+  for (const k of ["MinIntervalMinutes", "MaxIntervalMinutes", "DespawnMinutes", "MaxActive"]) {
+    const v = Number($(`e-${k}`).value);
+    if (v > 0) s.Events[k] = k === "MaxActive" ? Math.round(v) : v;
+  }
+  if (s.Events.MinIntervalMinutes > s.Events.MaxIntervalMinutes) s.Events.MaxIntervalMinutes = s.Events.MinIntervalMinutes;
+  return { launcher: true, solo: true };
+}
+
+function scheduleSettingsSave() {
+  if (!ui.config) return;
+  scheduleSave("settings", (l, s) => collectSettings(l, s), 700);
+}
+
+/* ---------- Wiring ---------- */
+
+for (const b of document.querySelectorAll("nav button")) b.addEventListener("click", () => showTab(b.dataset.tab));
+for (const b of document.querySelectorAll("[data-goto]")) b.addEventListener("click", () => showTab(b.dataset.goto));
+$("btn-play").addEventListener("click", () => act(() => api("/api/start", { method: "POST", json: { mode: "play" } }), "Starting the server - DayZ opens when it's ready"));
+$("btn-server").addEventListener("click", () => act(() => api("/api/start", { method: "POST", json: { mode: "server" } }), "Starting the server"));
+$("btn-join").addEventListener("click", () => act(() => api("/api/join", { method: "POST" }), "Launching DayZ"));
+$("btn-stop").addEventListener("click", () => act(() => api("/api/stop", { method: "POST" }), "Saving the world and stopping"));
+$("stop-with-game").addEventListener("change", (e) => {
+  const checked = e.target.checked;
+  scheduleSave("stopWithGame", (l) => { l.stopServerWhenGameCloses = checked; return { launcher: true }; }, 0);
+  flushSaves().then(refreshState);
+});
+$("say-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const text = $("say-text").value.trim();
+  if (!text) return;
+  act(() => api("/api/say", { method: "POST", json: { text } }), "Message sent").then(() => { $("say-text").value = ""; });
+});
+$("log-source").addEventListener("change", refreshLog);
+$("log-filter").addEventListener("input", () => { ui.log.from = -1; ui.log.file = ""; refreshLog(); });
+$("log-wrap").addEventListener("change", (e) => $("log").classList.toggle("wrap", e.target.checked));
+$("mods-refresh").addEventListener("click", () => { ui.mods = null; loadMods(); });
+$("update-install").addEventListener("click", installUpdate);
+$("update-later").addEventListener("click", () => { if (ui.update) rememberPref("skipUpdate", ui.update.latest); $("update-banner").hidden = true; });
+$("update-notes-toggle").addEventListener("click", () => { $("update-notes").hidden = !$("update-notes").hidden; });
+$("update-check").addEventListener("click", async () => {
+  try { renderUpdate(await api("/api/update/check", { method: "POST" })); } catch (e) { toast(e.message, true); }
+});
+$("ws-check").addEventListener("click", () => runWorkshopAction("check", workshopIds()));
+$("ws-update").addEventListener("click", () => runWorkshopAction("update", workshopIds()));
+for (const type of ["input", "change"]) {
+  $("tab-settings").addEventListener(type, (e) => {
+    if (e.target.closest("details")) return;
+    ui.settingsEdits = (ui.settingsEdits || 0) + 1;
+    scheduleSettingsSave();
+  });
+}
+for (const id of ["raw-launcher", "raw-solo"]) $(id).addEventListener("input", () => { ui.rawDirty = true; });
+$("raw-save").addEventListener("click", async () => {
+  let launcher, solo;
+  try { launcher = JSON.parse($("raw-launcher").value); solo = JSON.parse($("raw-solo").value); }
+  catch (e) { toast(`Not valid JSON: ${e.message}`, true); return; }
+  scheduleSave("raw", () => ({ launcher, solo }), 0);
+  await flushSaves();
+  if (saver.failed) return;
+  ui.rawDirty = false;
+  ui.mods = null;
+  ui.trader.loaded = false;
+  toast("Raw settings saved");
+  await loadSettings();
+});
+for (const b of document.querySelectorAll(".event-btn")) {
+  const messages = { heli: "Heli crash triggered", airdrop: "Airdrop triggered", gas: "Gas strike called in", clear: "Clearing events" };
+  b.addEventListener("click", () => act(() => api("/api/event", { method: "POST", json: { kind: b.dataset.event } }), messages[b.dataset.event]));
+}
+$("trader-here").addEventListener("click", async () => {
+  const survivors = ui.status && ui.status.data ? ui.status.data.Survivors || [] : [];
+  if (!survivors.length) return;
+  const pos = survivors[0].Position || [0, 0, 0];
+  const x = Math.round(pos[0]), z = Math.round(pos[2]);
+  if (!confirm(`Move the trader safe zone and map markers to ${x}, ${z}? This replaces your current safe zones.`)) return;
+  scheduleSave("traderZone", (l, solo) => {
+    const current = (solo.SafeZones || [])[0] || {};
+    solo.SafeZones = [{ Name: current.Name || "Central Trader", Position: [x, 0, z], Radius: current.Radius || 150 }];
+    return { solo: true };
+  }, 0);
+  await flushSaves();
+  if (!saver.failed) toast(`Trader zone moved to ${x}, ${z} - restart the server to apply`);
+});
+$("atm-here").addEventListener("click", async () => {
+  const survivors = ui.status && ui.status.data ? ui.status.data.Survivors || [] : [];
+  if (!survivors.length) return;
+  const me = survivors[0];
+  const pos = me.Position || [0, 0, 0];
+  const heading = isNumber(me.Heading) ? me.Heading : 0;
+  const rad = (heading * Math.PI) / 180;
+  const spot = {
+    x: Math.round((pos[0] + Math.sin(rad) * 1.5) * 100) / 100,
+    y: Math.round(pos[1] * 100) / 100,
+    z: Math.round((pos[2] + Math.cos(rad) * 1.5) * 100) / 100,
+    heading: Math.round((heading + 180) % 360),
+  };
+  if (ui.trader.loaded) {
+    ui.trader.atm.machines.push(spot);
+    renderMoney();
+    markTraderDirty();
+  } else {
+    scheduleSave(`atm-${Date.now()}`, (l) => {
+      l.atm = Object.assign({ atTrader: true, traderHeading: 270, machines: [] }, l.atm || {});
+      l.atm.machines = (Array.isArray(l.atm.machines) ? l.atm.machines : []).concat([spot]);
+      return { launcher: true };
+    }, 0);
+  }
+  await flushSaves();
+  if (!saver.failed) toast(`ATM placed at ${Math.round(spot.x)}, ${Math.round(spot.z)} - it appears after the next server restart`);
+});
+for (const b of document.querySelectorAll(".admin-money")) {
+  b.addEventListener("click", () => {
+    const amount = Math.round(Number($("admin-amount").value));
+    if (!(amount >= 0)) { toast("Enter an amount", true); return; }
+    const mode = b.dataset.mode;
+    if (mode === "set") adminAction({ action: "setmoney", amount }, `Balance set to $${amount.toLocaleString()}`);
+    else adminAction({ action: "money", amount: mode === "take" ? -amount : amount }, mode === "take" ? `Took $${amount.toLocaleString()}` : `Gave $${amount.toLocaleString()}`);
+  });
+}
+$("admin-teleport-preset").addEventListener("click", () => {
+  const locations = (ui.admin.info && ui.admin.info.locations) || [];
+  const chosen = locations[Number($("admin-location").value)];
+  if (!chosen) { toast("Pick a location", true); return; }
+  adminAction({ action: "teleport", x: chosen.x, z: chosen.z }, `Teleporting to ${chosen.name}`);
+});
+$("admin-teleport-coords").addEventListener("click", () => {
+  const x = Number($("admin-x").value), z = Number($("admin-z").value);
+  if (!($("admin-x").value && $("admin-z").value) || !(x >= 0 && z >= 0)) { toast("Enter X and Z", true); return; }
+  adminAction({ action: "teleport", x, z }, `Teleporting to ${Math.round(x)}, ${Math.round(z)}`);
+});
+$("zone-add").addEventListener("click", () => { addZoneRow({ Name: "New zone", Position: [0, 0, 0], Radius: 150 }); scheduleSettingsSave(); });
+$("open-loot").addEventListener("click", () => {
+  window.open(`/tools/loot-editor.html?api=1#token=${encodeURIComponent(TOKEN)}`, "dayzsolo-loot", "width=1280,height=880");
+});
+for (const b of document.querySelectorAll("[data-open]")) {
+  b.addEventListener("click", () => act(() => api("/api/open", { method: "POST", json: { target: b.dataset.open } })));
+}
+$("quit").addEventListener("click", async () => {
+  const running = ui.state && ui.state.phase !== "stopped";
+  if (!confirm(running ? "Quit the app? The server keeps running in the background." : "Quit the app?")) return;
+  try { await api("/api/quit", { method: "POST" }); } catch { /* the app is closing */ }
+  closePage('<main><div class="card"><h2>DayZ Solo is closed</h2><p class="hint">Start DayZ Solo again from the Start menu (or DayZ Solo.bat). You can close this window.</p></div></main>');
+});
+
+$("coop-address").addEventListener("change", () => { rememberPref("coopAddress", $("coop-address").value); renderCoop(); });
+$("coop-copy").addEventListener("click", async () => {
+  const text = $("coop-invite").value;
+  try { await navigator.clipboard.writeText(text); toast("Invite code copied"); }
+  catch { $("coop-invite").select(); document.execCommand("copy"); toast("Invite code copied"); }
+});
+$("coop-public").addEventListener("click", async () => {
+  try {
+    const res = await fetch("https://api.ipify.org?format=json");
+    const data = await res.json();
+    if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(data.ip || "")) throw new Error("no address");
+    ui.coop.publicIp = data.ip;
+    rememberPref("publicIp", data.ip);
+    rememberPref("coopAddress", data.ip);
+    renderCoop();
+    $("coop-address").value = data.ip;
+    renderCoop();
+    toast("Public IP added - forward UDP 2302-2305 to this PC");
+  } catch {
+    toast("Couldn't look up your public IP. Search the web for \"what is my IP\" and enter it by hand.", true);
+  }
+});
+$("coop-firewall").addEventListener("click", async () => {
+  $("coop-firewall").disabled = true;
+  toast("Accept the Windows admin prompt");
+  try { await api("/api/firewall", { method: "POST" }); toast("Windows Firewall now lets friends reach your server"); }
+  catch (e) { toast(e.message, true); }
+  finally { $("coop-firewall").disabled = false; }
+});
+$("join-code").addEventListener("input", renderJoinSummary);
+$("join-go").addEventListener("click", joinFriend);
+$("c-newpass").addEventListener("click", () => { $("c-password").value = newCoopPassword(); scheduleSettingsSave(); });
+
+for (const id of ["t-enabled", "t-zone", "t-rarity", "t-balance", "t-sell", "t-multiplier", "t-autoTraderItems", "m-cash", "m-currency", "m-atm-trader", "m-atm-heading", "m-minutes"]) {
+  $(id).addEventListener("change", () => { readShopFields(); markTraderDirty(); renderTraderItems(); });
+}
+$("t-scan").addEventListener("click", scanTraderItems);
+$("m-atm-turn").addEventListener("click", () => {
+  $("m-atm-heading").value = ((Number($("m-atm-heading").value) || 0) + 180) % 360;
+  readShopFields(); markTraderDirty();
+});
+$("pf-refresh").addEventListener("click", loadProfileFiles);
+$("pf-file").addEventListener("change", () => {
+  if (ui.profileFiles.loaded !== $("pf-text").value && !$("pf-save").disabled && !confirm("Throw away your unsaved changes to this file?")) {
+    $("pf-file").value = ui.profileFiles.current;
+    return;
+  }
+  rememberPref("profileFile", $("pf-file").value);
+  openProfileFile($("pf-file").value);
+});
+$("pf-text").addEventListener("input", () => { $("pf-save").disabled = !ui.profileFiles.current || $("pf-text").value === ui.profileFiles.loaded; });
+$("pf-format").addEventListener("click", () => {
+  try { $("pf-text").value = JSON.stringify(JSON.parse($("pf-text").value), null, 4); $("pf-save").disabled = !ui.profileFiles.current; }
+  catch (e) { toast(`Not valid JSON: ${e.message}`, true); }
+});
+$("pf-save").addEventListener("click", saveProfileFile);
+$("t-cat-add").addEventListener("click", () => {
+  const name = (prompt("Name of the new category, e.g. Favourites or Base building:") || "").trim();
+  if (!name) return;
+  ui.trader.shop.categories.push({ id: `custom-${Date.now().toString(36)}`, name: name.slice(0, 40), hidden: false, sellPercent: null });
+  refreshPlan(); markTraderDirty(); renderTraderCategories(); renderTraderItems();
+  toast(`Added "${name}" - move items into it below`);
+});
+$("t-search").addEventListener("input", () => { ui.trader.page = 0; renderTraderItems(); });
+$("t-filter-cat").addEventListener("change", () => { ui.trader.page = 0; rememberPref("traderCategory", $("t-filter-cat").value); renderTraderItems(); });
+$("t-filter").addEventListener("change", () => { ui.trader.page = 0; renderTraderItems(); });
+$("t-prev").addEventListener("click", () => { ui.trader.page--; renderTraderItems(); });
+$("t-next").addEventListener("click", () => { ui.trader.page++; renderTraderItems(); });
+$("t-bulk-move").addEventListener("click", () => {
+  const target = $("t-bulk-cat").value;
+  const name = (ui.trader.plan.find((c) => c.id === target) || {}).name || target;
+  bulkApply(`Moved to ${name}`, (item) => setOverride(item.c, { category: target === item.k ? undefined : target }));
+});
+$("t-bulk-price").addEventListener("click", () => {
+  const factor = Number($("t-bulk-factor").value);
+  if (!(factor > 0)) { toast("Enter a factor such as 0.5 or 2", true); return; }
+  bulkApply(`Prices ×${factor}`, (item, v) => setOverride(item.c, { buy: shopPrice(v.buy * factor) }));
+});
+$("t-bulk-hide").addEventListener("click", () => bulkApply("Hidden", (item) => setOverride(item.c, hiddenChange(item, true))));
+$("t-bulk-show").addEventListener("click", () => bulkApply("Shown", (item) => setOverride(item.c, hiddenChange(item, false))));
+$("t-bulk-reset").addEventListener("click", () => bulkApply("Reset", (item) => setOverride(item.c, { category: undefined, buy: undefined, sell: undefined, hidden: undefined, perPiece: undefined, sellOnly: undefined })));
+for (const [id, prop] of Object.entries(PREF_FIELDS)) {
+  for (const type of ["input", "change"]) {
+    $(id).addEventListener(type, () => { ui.prefs.fields[id] = $(id)[prop]; savePrefs(); });
+  }
+}
+window.addEventListener("beforeunload", (e) => {
+  const unsavedFile = ui.profileFiles && !$("pf-save").disabled;
+  if (saveIdle() && !ui.rawDirty && !unsavedFile) return;
+  flushSaves();
+  e.preventDefault();
+  e.returnValue = "";
+});
+
+if (!TOKEN) {
+  $("token-missing").hidden = false;
+} else {
+  refreshState().then(refreshStatus).then(refreshWorkshop);
+  refreshMiniLog();
+  loadPrefs().then(() => { if (ui.prefs.tab && ui.prefs.tab !== "dashboard" && document.getElementById(`tab-${ui.prefs.tab}`)) showTab(ui.prefs.tab); });
+  ui.intervals.push(
+    setInterval(refreshState, 2000),
+    setInterval(refreshStatus, 3000),
+    setInterval(() => { if (ui.tab === "dashboard") refreshMiniLog(); }, 2000),
+    setInterval(() => { if (ui.tab === "logs") refreshLog(); }, 1500),
+    setInterval(() => { if (ui.tab === "admin") refreshAdmin(); }, 3000),
+  );
+}
+</script>
+</body>
+</html>

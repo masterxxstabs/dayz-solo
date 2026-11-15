@@ -1,0 +1,14 @@
+# Your own settings and app state (made from config/defaults on first start)
+config/launcher.json
+config/SoloSurvivor.json
+config/app-ui.json
+config/.*
+config/Trader/
+config/trader-mod-items.txt
+
+# Private signing key and build output
+signing/
+*.biprivatekey
+dist/
+release-notes.md
+__pycache__/

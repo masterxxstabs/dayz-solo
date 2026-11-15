@@ -1,0 +1,313 @@
+{
+    "ShutdownServerWhenEmpty": true,
+    "ShutdownDelaySeconds": 10,
+    "UseFixedSpawn": false,
+    "FixedSpawnPosition": [
+        6550.0,
+        0.0,
+        2465.0
+    ],
+    "ExtraStartingItems": [],
+    "WelcomeMessage": "This world is yours alone. Good luck, survivor.",
+    "AlwaysDay": true,
+    "DayStartHour": 7,
+    "DayEndHour": 19,
+    "SafeZones": [
+        {
+            "Name": "Central Trader",
+            "Position": [
+                6400.0,
+                0.0,
+                6400.0
+            ],
+            "Radius": 150.0
+        }
+    ],
+    "Events": {
+        "Enabled": true,
+        "FirstEventMinutes": 10.0,
+        "MinIntervalMinutes": 30.0,
+        "MaxIntervalMinutes": 60.0,
+        "MaxActive": 2,
+        "DespawnMinutes": 45.0,
+        "HeliCrash": {
+            "Enabled": true,
+            "Weight": 1.0,
+            "Objects": [
+                "Wreck_UH1Y",
+                "Wreck_Mi8_Crashed"
+            ],
+            "Loot": [
+                "M4A1",
+                "AKM",
+                "FAL",
+                "SVD",
+                "VSS",
+                "Mag_STANAG_30Rnd",
+                "Mag_AKM_30Rnd",
+                "Mag_FAL_20Rnd",
+                "Mag_SVD_10Rnd",
+                "Ammo_556x45",
+                "Ammo_762x39",
+                "Ammo_308Win",
+                "PlateCarrierVest",
+                "BallisticHelmet_Green",
+                "NVGoggles",
+                "ACOGOptic",
+                "PSO1Optic",
+                "M67Grenade",
+                "Morphine",
+                "Epinephrine",
+                "TacticalBaconCan",
+                "Canteen"
+            ],
+            "LootCount": 8,
+            "Zombies": [
+                "ZmbM_PatrolNormal_Autumn",
+                "ZmbM_PatrolNormal_Summer",
+                "ZmbM_SoldierNormal",
+                "ZmbM_usSoldier_normal_Woodland"
+            ],
+            "ZombieCount": 6,
+            "Announcement": "A helicopter went down"
+        },
+        "Airdrop": {
+            "Enabled": true,
+            "Weight": 1.0,
+            "Objects": [
+                "WoodenCrate"
+            ],
+            "Loot": [
+                "M4A1",
+                "AKM",
+                "Mag_STANAG_30Rnd",
+                "Mag_AKM_30Rnd",
+                "Ammo_556x45",
+                "Ammo_762x39",
+                "SalineBagIV",
+                "BloodBagIV",
+                "Morphine",
+                "Epinephrine",
+                "BandageDressing",
+                "TacticalBaconCan",
+                "SpaghettiCan",
+                "WaterBottle",
+                "Canteen",
+                "PlateCarrierVest",
+                "BallisticHelmet_Green",
+                "NVGoggles",
+                "Battery9V"
+            ],
+            "LootCount": 10,
+            "Zombies": [
+                "ZmbM_PatrolNormal_Autumn",
+                "ZmbM_PatrolNormal_Summer",
+                "ZmbM_SoldierNormal",
+                "ZmbM_usSoldier_normal_Woodland"
+            ],
+            "ZombieCount": 4,
+            "Announcement": "A supply drop landed - look for red smoke"
+        },
+        "Gas": {
+            "Enabled": true,
+            "FirstStrikeMinutes": 20.0,
+            "MinIntervalMinutes": 90.0,
+            "MaxIntervalMinutes": 150.0,
+            "MarkerMinutes": 45.0,
+            "MinDistanceFromPlayer": 400.0,
+            "Announcement": "Toxic gas incoming"
+        },
+        "Locations": [
+            {
+                "Name": "Northwest Airfield",
+                "MapName": "chernarusplus",
+                "Position": [
+                    4500.0,
+                    0.0,
+                    10250.0
+                ],
+                "Radius": 400.0
+            },
+            {
+                "Name": "Tisy",
+                "MapName": "chernarusplus",
+                "Position": [
+                    1650.0,
+                    0.0,
+                    14000.0
+                ],
+                "Radius": 250.0
+            },
+            {
+                "Name": "Vybor",
+                "MapName": "chernarusplus",
+                "Position": [
+                    4300.0,
+                    0.0,
+                    8600.0
+                ],
+                "Radius": 400.0
+            },
+            {
+                "Name": "Stary Sobor",
+                "MapName": "chernarusplus",
+                "Position": [
+                    6100.0,
+                    0.0,
+                    7700.0
+                ],
+                "Radius": 400.0
+            },
+            {
+                "Name": "Gorka",
+                "MapName": "chernarusplus",
+                "Position": [
+                    9600.0,
+                    0.0,
+                    8800.0
+                ],
+                "Radius": 400.0
+            },
+            {
+                "Name": "Krasnostav airstrip",
+                "MapName": "chernarusplus",
+                "Position": [
+                    11900.0,
+                    0.0,
+                    12500.0
+                ],
+                "Radius": 300.0
+            },
+            {
+                "Name": "Balota airfield",
+                "MapName": "chernarusplus",
+                "Position": [
+                    4800.0,
+                    0.0,
+                    2500.0
+                ],
+                "Radius": 300.0
+            },
+            {
+                "Name": "Severograd",
+                "MapName": "chernarusplus",
+                "Position": [
+                    8000.0,
+                    0.0,
+                    12700.0
+                ],
+                "Radius": 400.0
+            },
+            {
+                "Name": "Zelenogorsk",
+                "MapName": "chernarusplus",
+                "Position": [
+                    2600.0,
+                    0.0,
+                    5300.0
+                ],
+                "Radius": 400.0
+            },
+            {
+                "Name": "Novy Sobor",
+                "MapName": "chernarusplus",
+                "Position": [
+                    7100.0,
+                    0.0,
+                    7700.0
+                ],
+                "Radius": 350.0
+            },
+            {
+                "Name": "Lukow airfield",
+                "MapName": "enoch",
+                "Position": [
+                    3900.0,
+                    0.0,
+                    11500.0
+                ],
+                "Radius": 600.0
+            },
+            {
+                "Name": "Brena",
+                "MapName": "enoch",
+                "Position": [
+                    6500.0,
+                    0.0,
+                    11200.0
+                ],
+                "Radius": 600.0
+            },
+            {
+                "Name": "Topolin",
+                "MapName": "enoch",
+                "Position": [
+                    1500.0,
+                    0.0,
+                    7300.0
+                ],
+                "Radius": 600.0
+            },
+            {
+                "Name": "Sitnik",
+                "MapName": "enoch",
+                "Position": [
+                    11400.0,
+                    0.0,
+                    9500.0
+                ],
+                "Radius": 600.0
+            },
+            {
+                "Name": "Radunin",
+                "MapName": "enoch",
+                "Position": [
+                    7200.0,
+                    0.0,
+                    6400.0
+                ],
+                "Radius": 600.0
+            },
+            {
+                "Name": "Nadbor",
+                "MapName": "enoch",
+                "Position": [
+                    6000.0,
+                    0.0,
+                    4100.0
+                ],
+                "Radius": 600.0
+            },
+            {
+                "Name": "Grabin",
+                "MapName": "enoch",
+                "Position": [
+                    10700.0,
+                    0.0,
+                    11000.0
+                ],
+                "Radius": 600.0
+            },
+            {
+                "Name": "Polana",
+                "MapName": "enoch",
+                "Position": [
+                    3100.0,
+                    0.0,
+                    2400.0
+                ],
+                "Radius": 600.0
+            },
+            {
+                "Name": "Kolembrody",
+                "MapName": "enoch",
+                "Position": [
+                    8300.0,
+                    0.0,
+                    13300.0
+                ],
+                "Radius": 600.0
+            }
+        ]
+    }
+}

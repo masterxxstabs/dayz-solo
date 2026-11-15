@@ -1,0 +1,148 @@
+{
+    "map": "enoch",
+    "playerName": "Survivor",
+    "stopServerWhenGameCloses": true,
+    "port": 2302,
+    "autoWorkshopMods": true,
+    "modUpdates": {
+        "checkBeforeLaunch": true,
+        "timeoutMinutes": 20
+    },
+    "excludeMods": [],
+    "mods": [],
+    "serverMods": [
+        "3704049029"
+    ],
+    "loadLocalModFolders": true,
+    "verifySignatures": true,
+    "useBattlEye": true,
+    "lootMultiplier": 5,
+    "lootCategoryMultipliers": {
+        "food": 2
+    },
+    "lootVariety": true,
+    "gasZones": "random",
+    "lootRespawnSpeed": "fast",
+    "globalsOverrides": {
+        "FoodDecay": 0
+    },
+    "zombieMultiplier": 0.5,
+    "vehicleMultiplier": 2,
+    "moddedVehicles": true,
+    "moddedVehiclePartChance": 1.0,
+    "bandits": {
+        "enabled": true,
+        "groups": 5,
+        "groupSize": 3,
+        "behaviour": "ROAMING",
+        "accuracy": [
+            0.25,
+            0.5
+        ],
+        "damageMultiplier": 0.7,
+        "respawnMinutes": 30,
+        "chance": 1.0,
+        "loadout": "",
+        "militaryGear": true
+    },
+    "shop": {
+        "enabled": false,
+        "startingBalance": 2000,
+        "sellPercent": 40,
+        "requireTraderZone": false,
+        "prices": {
+            "Weapons": 2500,
+            "Magazines": 300,
+            "Ammo": 120,
+            "Attachments": 500,
+            "Explosives": 800,
+            "Medical": 150,
+            "Clothing": 250,
+            "Storage": 600,
+            "Food & Drink": 60,
+            "Tools & Misc": 200,
+            "Vehicle Parts": 400,
+            "Vehicles": 15000,
+            "Boats": 8000
+        },
+        "itemPrices": {}
+    },
+    "coop": {
+        "enabled": false,
+        "maxPlayers": 4,
+        "password": ""
+    },
+    "cash": {
+        "enabled": true,
+        "currency": "dollar",
+        "values": {}
+    },
+    "atm": {
+        "atTrader": true,
+        "traderHeading": 270,
+        "machines": []
+    },
+    "miningMinutesPerBitcoin": 120,
+    "modLoot": {
+        "enabled": true,
+        "applyLootMultiplier": false,
+        "exclude": []
+    },
+    "enableMinimap": false,
+    "autoTraderItems": true,
+    "autoTraderTarget": "",
+    "autoTraderPrices": {
+        "Weapons": [
+            1500,
+            600
+        ],
+        "Magazines": [
+            150,
+            60
+        ],
+        "Ammo": [
+            60,
+            25
+        ],
+        "Attachments": [
+            300,
+            120
+        ],
+        "Explosives": [
+            600,
+            240
+        ],
+        "Clothing": [
+            150,
+            60
+        ],
+        "Storage": [
+            400,
+            160
+        ],
+        "Food & Drink": [
+            40,
+            15
+        ],
+        "Tools & Misc": [
+            120,
+            50
+        ],
+        "Vehicle Parts": [
+            400,
+            160
+        ]
+    },
+    "disable3rdPerson": false,
+    "disableCrosshair": false,
+    "serverTimeAcceleration": 1,
+    "serverNightTimeAcceleration": 1,
+    "persistentTime": true,
+    "serverReadyTimeoutSeconds": 180,
+    "serverReadyExtraWaitSeconds": 10,
+    "serverShutdownTimeoutSeconds": 90,
+    "clientPath": "",
+    "serverPath": "",
+    "extraClientArgs": "",
+    "extraServerArgs": ""
+}

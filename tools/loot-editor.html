@@ -1,0 +1,818 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DayZ Solo Loot Editor</title>
+<style>
+  :root {
+    --bg: #f4f2ee;
+    --panel: #ffffff;
+    --panel-2: #ece9e3;
+    --text: #1d1c1a;
+    --muted: #6b675f;
+    --border: #d6d1c7;
+    --accent: #5a7a3a;
+    --accent-text: #ffffff;
+    --changed: #fff1c2;
+    --changed-border: #d9a514;
+    --warn: #b3261e;
+    --row-alt: #faf8f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161714;
+      --panel: #1f201c;
+      --panel-2: #2a2b26;
+      --text: #e8e6e0;
+      --muted: #a29e94;
+      --border: #3a3b35;
+      --accent: #8fb35c;
+      --accent-text: #11130e;
+      --changed: #4a3d10;
+      --changed-border: #d9a514;
+      --warn: #ff8a80;
+      --row-alt: #23241f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161714;
+    --panel: #1f201c;
+    --panel-2: #2a2b26;
+    --text: #e8e6e0;
+    --muted: #a29e94;
+    --border: #3a3b35;
+    --accent: #8fb35c;
+    --accent-text: #11130e;
+    --changed: #4a3d10;
+    --changed-border: #d9a514;
+    --warn: #ff8a80;
+    --row-alt: #23241f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  header {
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+    padding: 14px 16px; background: var(--panel); border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 5;
+  }
+  header h1 { font-size: 17px; margin: 0 12px 0 0; letter-spacing: .2px; }
+  header .spacer { flex: 1; }
+  button, select, input {
+    font: inherit; color: var(--text); background: var(--panel);
+    border: 1px solid var(--border); border-radius: 6px; padding: 5px 9px;
+  }
+  button { cursor: pointer; }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  button:disabled { opacity: .5; cursor: default; }
+  input[type="number"] { width: 92px; text-align: right; }
+  main { padding: 16px; max-width: 1400px; margin: 0 auto; }
+  .status { color: var(--muted); font-size: 13px; }
+  .status.error { color: var(--warn); }
+  .welcome {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 20px 22px; max-width: 760px;
+  }
+  .welcome h2 { margin-top: 0; font-size: 18px; }
+  .welcome code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; word-break: break-all; }
+  .welcome ol { padding-left: 20px; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 12px; flex-wrap: wrap; }
+  .tabs button {
+    border: 1px solid transparent; border-bottom: none; border-radius: 6px 6px 0 0;
+    background: transparent; padding: 8px 14px; color: var(--muted);
+  }
+  .tabs button[aria-selected="true"] { background: var(--panel); border-color: var(--border); color: var(--text); font-weight: 600; margin-bottom: -1px; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .toolbar input[type="search"] { min-width: 220px; flex: 1 1 220px; max-width: 360px; }
+  .bulk {
+    display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px; margin-bottom: 10px;
+  }
+  .bulk .group { display: flex; gap: 6px; align-items: center; }
+  .bulk strong { font-weight: 600; }
+  .table-wrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; }
+  table { border-collapse: collapse; width: 100%; min-width: 900px; }
+  th, td { padding: 5px 8px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle; }
+  th { background: var(--panel-2); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); position: sticky; top: 0; }
+  tbody tr:nth-child(even) { background: var(--row-alt); }
+  td.name { font-weight: 600; white-space: nowrap; }
+  td.meta { color: var(--muted); font-size: 12px; }
+  td.desc { color: var(--muted); font-size: 12px; max-width: 520px; }
+  input.changed { background: var(--changed); border-color: var(--changed-border); }
+  input.invalid { border-color: var(--warn); outline: 1px solid var(--warn); }
+  .pager { display: flex; gap: 8px; align-items: center; justify-content: flex-end; padding: 10px 0; flex-wrap: wrap; }
+  .hint { color: var(--muted); font-size: 12px; }
+  .badge { display: inline-block; background: var(--panel-2); border-radius: 10px; padding: 0 7px; font-size: 12px; color: var(--muted); }
+  [hidden] { display: none !important; }
+  @media (max-width: 640px) {
+    header h1 { width: 100%; }
+    main { padding: 12px 16px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>DayZ Solo Loot Editor</h1>
+  <button id="open-folder" class="primary">Open mission folder</button>
+  <button id="open-files">Open XML files…</button>
+  <input id="file-input" type="file" accept=".xml" multiple hidden>
+  <span class="spacer"></span>
+  <span id="status" class="status" role="status">Nothing loaded</span>
+  <button id="save" class="primary" disabled>Save changes</button>
+</header>
+
+<main>
+  <section id="welcome" class="welcome">
+    <h2>Change what spawns on your private server</h2>
+    <ol>
+      <li>Quit DayZ so the server isn't running. Changes apply the next time you launch.</li>
+      <li>Click <strong>Open mission folder</strong> and pick your mission folder. <code>Loot Editor.bat</code>
+        copies its path to the clipboard, so you can paste it into the folder picker's address bar. It's usually
+        <code>…\steamapps\common\DayZServer\mpmissions\dayzOffline.chernarusplus</code>.</li>
+      <li>Edit values, then click <strong>Save changes</strong>. The first save of each file keeps the original next to
+        it as <code>&lt;file&gt;.dayzsolo-backup</code>.</li>
+    </ol>
+    <p class="hint">Opening the folder needs Edge or Chrome. In other browsers use <strong>Open XML files…</strong>: pick
+      <code>types.xml</code>, <code>globals.xml</code> and <code>events.xml</code> from the mission's <code>db</code>
+      folder, and saving downloads the edited files for you to copy back.</p>
+    <p class="hint">Steam updates to DayZ Server can overwrite these files. Your backups and edits are plain XML, so
+      keep a copy of anything you've tuned.</p>
+  </section>
+
+  <section id="editor" hidden>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-tab="items" aria-selected="true">Items <span id="count-items" class="badge">0</span></button>
+      <button role="tab" data-tab="world" aria-selected="false">World <span id="count-world" class="badge">0</span></button>
+      <button role="tab" data-tab="events" aria-selected="false">Events <span id="count-events" class="badge">0</span></button>
+    </nav>
+
+    <div id="tab-items" role="tabpanel">
+      <div class="toolbar">
+        <input id="item-search" type="search" placeholder="Search items, e.g. AK or Ammo_">
+        <select id="item-category" aria-label="Category"><option value="">All categories</option></select>
+        <select id="item-usage" aria-label="Location"><option value="">All locations</option></select>
+        <select id="item-file" aria-label="File"><option value="">All files</option></select>
+        <label><input id="item-spawning" type="checkbox"> Only items that spawn</label>
+        <label><input id="item-changed" type="checkbox"> Only changed</label>
+      </div>
+      <div class="bulk">
+        <strong id="bulk-count">0 items match</strong>
+        <div class="group">
+          <label for="bulk-factor">Spawn amount ×</label>
+          <input id="bulk-factor" type="number" step="0.1" min="0" value="2">
+          <button id="bulk-multiply">Apply</button>
+        </div>
+        <div class="group">
+          <label for="bulk-lifetime">Lifetime (s)</label>
+          <input id="bulk-lifetime" type="number" step="60" min="0" value="14400">
+          <button id="bulk-set-lifetime">Set</button>
+        </div>
+        <button id="bulk-stop">Stop spawning</button>
+        <button id="bulk-revert">Undo changes</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th title="Target number on the map">Nominal</th>
+              <th title="Below this, the server restocks">Min</th>
+              <th title="Seconds before it despawns">Lifetime</th>
+              <th title="Seconds between restocks (0 = right away)">Restock</th>
+              <th title="Fill % minimum (-1 = default)">Qty min</th>
+              <th title="Fill % maximum (-1 = default)">Qty max</th>
+              <th>Category / where</th>
+            </tr>
+          </thead>
+          <tbody id="item-rows"></tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <span id="item-page-info" class="hint"></span>
+        <button id="item-prev">Previous</button>
+        <button id="item-next">Next</button>
+      </div>
+    </div>
+
+    <div id="tab-world" role="tabpanel" hidden>
+      <div class="toolbar">
+        <input id="world-search" type="search" placeholder="Search settings">
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Setting</th><th>Value</th><th>What it does</th></tr></thead>
+          <tbody id="world-rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="tab-events" role="tabpanel" hidden>
+      <div class="toolbar">
+        <input id="event-search" type="search" placeholder="Search events, e.g. Vehicle, Crash, Animal, Infected">
+        <label><input id="event-active" type="checkbox"> Only active</label>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th title="Target number at once">Nominal</th>
+              <th title="Below this, the server spawns more">Min</th>
+              <th title="Hard cap">Max</th>
+              <th title="Seconds before it despawns">Lifetime</th>
+              <th title="Seconds between restocks">Restock</th>
+              <th>Active</th>
+            </tr>
+          </thead>
+          <tbody id="event-rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+"use strict";
+
+const ITEM_FIELDS = ["nominal", "min", "lifetime", "restock", "quantmin", "quantmax"];
+const EVENT_FIELDS = ["nominal", "min", "max", "lifetime", "restock"];
+const PAGE_SIZE = 100;
+const BACKUP_SUFFIX = ".dayzsolo-backup";
+
+const WORLD_HELP = {
+  AnimalMaxCount: "Maximum number of animals alive on the map at once.",
+  ZombieMaxCount: "Maximum number of infected alive on the map at once.",
+  CleanupAvoidance: "Distance (m) from players inside which cleanup won't remove items.",
+  CleanupLifetimeDeadAnimal: "Seconds before a dead animal body is removed.",
+  CleanupLifetimeDeadInfected: "Seconds before a dead infected body is removed.",
+  CleanupLifetimeDeadPlayer: "Seconds before your dead body (and its gear) is removed.",
+  CleanupLifetimeDefault: "Default seconds before a dropped item is removed.",
+  CleanupLifetimeLimit: "Maximum number of items cleaned up per pass.",
+  CleanupLifetimeRuined: "Seconds before a ruined item is removed.",
+  FlagRefreshFrequency: "Seconds between territory flag refreshes.",
+  FlagRefreshMaxDuration: "Maximum seconds a flag keeps a base alive without being raised again.",
+  FoodDecay: "1 = food rots over time, 0 = it doesn't.",
+  IdleModeCountdown: "Seconds after the last player leaves before the economy idles.",
+  IdleModeStartup: "1 = the economy starts idle until someone joins.",
+  InitialSpawn: "Percentage of loot spawned when the world is first created.",
+  LootDamageMax: "Maximum damage (0–1) loot spawns with.",
+  LootDamageMin: "Minimum damage (0–1) loot spawns with.",
+  LootProxyPlacement: "1 = loot spawns on shelves and tables in buildings.",
+  LootSpawnAvoidance: "Distance (m) from players where new loot won't spawn.",
+  RespawnAttempt: "How many spawn attempts the economy makes per item per pass.",
+  RespawnLimit: "Maximum items of one type respawned per pass.",
+  RespawnTypes: "Maximum number of item types respawned per pass.",
+  RestartSpawn: "Percentage of loot respawned at each server start.",
+  SpawnInitial: "Number of items spawned initially per pass.",
+  TimeHopping: "Seconds a player is blocked from rejoining after server hopping.",
+  TimeLogin: "Seconds of login countdown when joining.",
+  TimeLogout: "Seconds of logout countdown when leaving.",
+  TimePenalty: "Extra login seconds after hopping servers.",
+  WorldWetTempUpdate: "1 = world wetness and temperature are simulated.",
+  ZoneSpawnDist: "Distance (m) from players at which infected and animal zones activate.",
+};
+
+const state = {
+  mode: null,
+  root: null,
+  files: new Map(),
+  items: [],
+  world: [],
+  events: [],
+  itemFiltered: [],
+  itemPage: 0,
+  saving: false,
+};
+
+const $ = (id) => document.getElementById(id);
+
+function setStatus(text, isError) {
+  const el = $("status");
+  el.textContent = text;
+  el.classList.toggle("error", !!isError);
+}
+
+function childEl(el, tag) {
+  for (const c of el.children) if (c.tagName === tag) return c;
+  return null;
+}
+
+function childText(el, tag) {
+  const c = childEl(el, tag);
+  return c ? c.textContent.trim() : "";
+}
+
+function setChildText(el, tag, value) {
+  let c = childEl(el, tag);
+  if (!c) {
+    c = el.ownerDocument.createElement(tag);
+    el.insertBefore(c, childEl(el, "flags") || childEl(el, "category") || null);
+  }
+  c.textContent = String(value);
+}
+
+function attrList(el, tag) {
+  const out = [];
+  for (const c of el.children) if (c.tagName === tag && c.getAttribute("name")) out.push(c.getAttribute("name"));
+  return out;
+}
+
+function parseXml(text, path) {
+  const doc = new DOMParser().parseFromString(text, "application/xml");
+  const err = doc.querySelector("parsererror");
+  if (err) throw new Error(`${path} is not valid XML: ${err.textContent.split("\n")[0]}`);
+  return doc;
+}
+
+function serialize(file) {
+  const decl = (file.originalText.match(/^\s*<\?xml[^>]*\?>/) || ['<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>'])[0].trim();
+  return decl + "\n" + new XMLSerializer().serializeToString(file.doc.documentElement) + "\n";
+}
+
+async function dirFor(root, parts, create) {
+  let dir = root;
+  for (const part of parts) dir = await dir.getDirectoryHandle(part, { create: !!create });
+  return dir;
+}
+
+const API_TOKEN = new URLSearchParams(location.hash.slice(1)).get("token");
+const API_MODE = new URLSearchParams(location.search).get("api") === "1" && !!API_TOKEN;
+
+async function apiFile(path, method, body) {
+  const res = await fetch(`/api/mission-file?path=${encodeURIComponent(path)}`, {
+    method,
+    body,
+    headers: { "X-DayZSolo-Token": API_TOKEN },
+  });
+  if (!res.ok) {
+    let message = `${method} ${path} failed (${res.status})`;
+    try { message = (await res.json()).error || message; } catch { /* not JSON */ }
+    const err = new Error(message);
+    err.status = res.status;
+    throw err;
+  }
+  return res.text();
+}
+
+async function readPath(path) {
+  if (state.mode === "api") return apiFile(path, "GET");
+  const parts = path.split("/");
+  const dir = await dirFor(state.root, parts.slice(0, -1));
+  const handle = await dir.getFileHandle(parts[parts.length - 1]);
+  return (await handle.getFile()).text();
+}
+
+async function pathExists(path) {
+  try { await readPath(path); return true; } catch { return false; }
+}
+
+async function writePath(path, text) {
+  if (state.mode === "api") { await apiFile(path, "PUT", text); return; }
+  const parts = path.split("/");
+  const dir = await dirFor(state.root, parts.slice(0, -1));
+  const handle = await dir.getFileHandle(parts[parts.length - 1], { create: true });
+  const writable = await handle.createWritable();
+  await writable.write(text);
+  await writable.close();
+}
+
+function resetData() {
+  state.files.clear();
+  state.items = [];
+  state.world = [];
+  state.events = [];
+  state.itemPage = 0;
+}
+
+function addFile(path, text) {
+  const doc = parseXml(text, path);
+  const kind = { types: "types", variables: "globals", events: "events" }[doc.documentElement.tagName];
+  if (!kind) return null;
+  const file = { path, doc, originalText: text, dirty: false, kind };
+  state.files.set(path, file);
+
+  if (kind === "types") {
+    for (const el of doc.documentElement.children) {
+      if (el.tagName !== "type") continue;
+      const orig = {};
+      for (const f of ITEM_FIELDS) orig[f] = childText(el, f);
+      state.items.push({
+        name: el.getAttribute("name") || "?",
+        file,
+        el,
+        orig,
+        category: (childEl(el, "category") && childEl(el, "category").getAttribute("name")) || "",
+        usage: attrList(el, "usage"),
+        value: attrList(el, "value"),
+      });
+    }
+  }
+  else if (kind === "globals") {
+    for (const el of doc.documentElement.children) {
+      if (el.tagName !== "var") continue;
+      state.world.push({ name: el.getAttribute("name"), file, el, orig: el.getAttribute("value") });
+    }
+  }
+  else {
+    for (const el of doc.documentElement.children) {
+      if (el.tagName !== "event") continue;
+      const orig = {};
+      for (const f of EVENT_FIELDS) orig[f] = childText(el, f);
+      orig.active = childText(el, "active");
+      state.events.push({ name: el.getAttribute("name"), file, el, orig });
+    }
+  }
+  return file;
+}
+
+async function loadFromFolder(dir) {
+  state.mode = "fs";
+  state.root = dir;
+  resetData();
+
+  let prefix = "";
+  let isMission = false;
+  try { await dir.getDirectoryHandle("db"); prefix = "db/"; isMission = true; } catch { /* the db folder itself was picked */ }
+  await loadMission(prefix, isMission);
+}
+
+async function loadFromApi() {
+  state.mode = "api";
+  state.root = null;
+  resetData();
+  await loadMission("db/", true);
+}
+
+async function loadMission(prefix, isMission) {
+  const paths = [prefix + "types.xml", prefix + "globals.xml", prefix + "events.xml"];
+  if (isMission && await pathExists("cfgeconomycore.xml")) {
+    const core = parseXml(await readPath("cfgeconomycore.xml"), "cfgeconomycore.xml");
+    for (const ce of core.querySelectorAll("ce")) {
+      const folder = (ce.getAttribute("folder") || "").replace(/\\/g, "/").replace(/\/+$/, "");
+      for (const f of ce.querySelectorAll("file")) {
+        const type = f.getAttribute("type");
+        if (type !== "types" && type !== "events") continue;
+        const p = (folder ? folder + "/" : "") + f.getAttribute("name");
+        if (!paths.includes(p)) paths.push(p);
+      }
+    }
+  }
+
+  const missing = [];
+  for (const p of paths) {
+    let text;
+    try { text = await readPath(p); } catch { missing.push(p); continue; }
+    addFile(p, text);
+  }
+  if (!state.files.size) throw new Error("No types.xml, globals.xml or events.xml found. Pick the mission folder (the one containing \"db\").");
+  showEditor(missing);
+}
+
+async function loadFromFiles(fileList) {
+  state.mode = "files";
+  state.root = null;
+  resetData();
+  const skipped = [];
+  for (const f of fileList) {
+    const loaded = addFile(f.name, await f.text());
+    if (!loaded) skipped.push(f.name);
+  }
+  if (!state.files.size) throw new Error("None of those files are types.xml, globals.xml or events.xml.");
+  showEditor(skipped);
+}
+
+function fillSelect(select, values, label) {
+  select.innerHTML = "";
+  select.add(new Option(label, ""));
+  for (const v of values) select.add(new Option(v, v));
+}
+
+function showEditor(notes) {
+  $("welcome").hidden = true;
+  $("editor").hidden = false;
+  $("count-items").textContent = state.items.length;
+  $("count-world").textContent = state.world.length;
+  $("count-events").textContent = state.events.length;
+
+  const uniq = (arr) => [...new Set(arr)].filter(Boolean).sort((a, b) => a.localeCompare(b));
+  fillSelect($("item-category"), uniq(state.items.map((i) => i.category)), "All categories");
+  fillSelect($("item-usage"), uniq(state.items.flatMap((i) => i.usage)), "All locations");
+  fillSelect($("item-file"), uniq(state.items.map((i) => i.file.path)), "All files");
+
+  applyItemFilter();
+  renderWorld();
+  renderEvents();
+  updateDirty();
+  const loaded = `${state.files.size} file${state.files.size === 1 ? "" : "s"} loaded`;
+  setStatus(notes.length ? `${loaded} (not found or skipped: ${notes.join(", ")})` : loaded);
+}
+
+function itemChanged(item) {
+  return ITEM_FIELDS.some((f) => childText(item.el, f) !== item.orig[f]);
+}
+
+function applyItemFilter() {
+  const q = $("item-search").value.trim().toLowerCase();
+  const cat = $("item-category").value;
+  const usage = $("item-usage").value;
+  const file = $("item-file").value;
+  const spawning = $("item-spawning").checked;
+  const changed = $("item-changed").checked;
+  state.itemFiltered = state.items.filter((i) =>
+    (!q || i.name.toLowerCase().includes(q)) &&
+    (!cat || i.category === cat) &&
+    (!usage || i.usage.includes(usage)) &&
+    (!file || i.file.path === file) &&
+    (!spawning || Number(childText(i.el, "nominal")) > 0) &&
+    (!changed || itemChanged(i)));
+  state.itemPage = 0;
+  $("bulk-count").textContent = `${state.itemFiltered.length} item${state.itemFiltered.length === 1 ? "" : "s"} match`;
+  renderItems();
+}
+
+function numberInput(value, original, min, onChange) {
+  const input = document.createElement("input");
+  input.type = "number";
+  input.value = value;
+  input.min = String(min);
+  input.step = "1";
+  input.classList.toggle("changed", value !== original);
+  input.addEventListener("change", () => {
+    const v = input.value.trim();
+    const ok = /^-?\d+(\.\d+)?$/.test(v) && Number(v) >= min;
+    input.classList.toggle("invalid", !ok);
+    if (!ok) return;
+    onChange(v);
+    input.classList.toggle("changed", v !== original);
+  });
+  return input;
+}
+
+function cell(row, content, className) {
+  const td = document.createElement("td");
+  if (className) td.className = className;
+  if (content instanceof Node) td.appendChild(content);
+  else td.textContent = content;
+  row.appendChild(td);
+  return td;
+}
+
+function validateItemRow(item, row) {
+  const nominal = Number(childText(item.el, "nominal"));
+  const min = Number(childText(item.el, "min"));
+  const minInput = row.querySelector('input[data-field="min"]');
+  const bad = min > nominal;
+  minInput.classList.toggle("invalid", bad);
+  minInput.title = bad ? "Min is higher than nominal - the server will keep trying to spawn more" : "";
+}
+
+function renderItems() {
+  const body = $("item-rows");
+  body.innerHTML = "";
+  const start = state.itemPage * PAGE_SIZE;
+  const page = state.itemFiltered.slice(start, start + PAGE_SIZE);
+  for (const item of page) {
+    const row = document.createElement("tr");
+    cell(row, item.name, "name");
+    for (const f of ITEM_FIELDS) {
+      const isQuant = f.startsWith("quant");
+      const current = childText(item.el, f);
+      const input = numberInput(current, item.orig[f], isQuant ? -1 : 0, (v) => {
+        setChildText(item.el, f, v);
+        markDirty(item.file);
+        validateItemRow(item, row);
+      });
+      input.dataset.field = f;
+      input.setAttribute("aria-label", `${item.name} ${f}`);
+      cell(row, input);
+    }
+    const where = [item.category, item.usage.join(", "), item.value.join(", ")].filter(Boolean).join(" · ");
+    const fromMod = !/(^|\/)types\.xml$/i.test(item.file.path);
+    cell(row, where + (fromMod ? ` · ${item.file.path}` : ""), "meta");
+    body.appendChild(row);
+    validateItemRow(item, row);
+  }
+  const total = state.itemFiltered.length;
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  $("item-page-info").textContent = total ? `Showing ${start + 1}–${start + page.length} of ${total} · page ${state.itemPage + 1} of ${pages}` : "No items match";
+  $("item-prev").disabled = state.itemPage === 0;
+  $("item-next").disabled = state.itemPage >= pages - 1;
+}
+
+function renderWorld() {
+  const q = $("world-search").value.trim().toLowerCase();
+  const body = $("world-rows");
+  body.innerHTML = "";
+  for (const v of state.world) {
+    if (q && !v.name.toLowerCase().includes(q) && !(WORLD_HELP[v.name] || "").toLowerCase().includes(q)) continue;
+    const row = document.createElement("tr");
+    cell(row, v.name, "name");
+    const isFloat = v.el.getAttribute("type") === "1";
+    const input = numberInput(v.el.getAttribute("value"), v.orig, isFloat ? 0 : -1, (val) => {
+      v.el.setAttribute("value", isFloat ? val : String(Math.round(Number(val))));
+      markDirty(v.file);
+    });
+    input.step = isFloat ? "0.01" : "1";
+    input.setAttribute("aria-label", v.name);
+    cell(row, input);
+    cell(row, WORLD_HELP[v.name] || "", "desc");
+    body.appendChild(row);
+  }
+}
+
+function renderEvents() {
+  const q = $("event-search").value.trim().toLowerCase();
+  const onlyActive = $("event-active").checked;
+  const body = $("event-rows");
+  body.innerHTML = "";
+  for (const ev of state.events) {
+    if (q && !ev.name.toLowerCase().includes(q)) continue;
+    if (onlyActive && childText(ev.el, "active") !== "1") continue;
+    const row = document.createElement("tr");
+    cell(row, ev.name, "name");
+    for (const f of EVENT_FIELDS) {
+      const input = numberInput(childText(ev.el, f), ev.orig[f], 0, (v) => {
+        setChildText(ev.el, f, v);
+        markDirty(ev.file);
+        validateEventRow(ev, row);
+      });
+      input.dataset.field = f;
+      input.setAttribute("aria-label", `${ev.name} ${f}`);
+      cell(row, input);
+    }
+    const active = document.createElement("input");
+    active.type = "checkbox";
+    active.checked = childText(ev.el, "active") === "1";
+    active.setAttribute("aria-label", `${ev.name} active`);
+    active.addEventListener("change", () => {
+      setChildText(ev.el, "active", active.checked ? "1" : "0");
+      markDirty(ev.file);
+    });
+    cell(row, active);
+    body.appendChild(row);
+    validateEventRow(ev, row);
+  }
+}
+
+function validateEventRow(ev, row) {
+  const nominal = Number(childText(ev.el, "nominal"));
+  const min = Number(childText(ev.el, "min"));
+  const max = Number(childText(ev.el, "max"));
+  const maxInput = row.querySelector('input[data-field="max"]');
+  const minInput = row.querySelector('input[data-field="min"]');
+  const capped = childText(ev.el, "max") !== "" && nominal > max;
+  maxInput.classList.toggle("invalid", capped);
+  maxInput.title = capped ? "Max is below nominal - raise max or the extra won't spawn" : "";
+  minInput.classList.toggle("invalid", min > nominal);
+}
+
+function markDirty(file) {
+  file.dirty = true;
+  updateDirty();
+}
+
+function updateDirty() {
+  const dirty = [...state.files.values()].filter((f) => f.dirty);
+  $("save").disabled = !dirty.length || state.saving;
+  $("save").textContent = dirty.length ? `Save changes (${dirty.length} file${dirty.length === 1 ? "" : "s"})` : "Save changes";
+}
+
+function bulkItems(fn) {
+  for (const item of state.itemFiltered) {
+    if (fn(item) !== false) markDirty(item.file);
+  }
+  renderItems();
+}
+
+function downloadText(name, text) {
+  const blob = new Blob([text], { type: "application/xml" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = name.split("/").pop();
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+
+async function save() {
+  const dirty = [...state.files.values()].filter((f) => f.dirty);
+  if (!dirty.length) return;
+  state.saving = true;
+  updateDirty();
+  try {
+    for (const file of dirty) {
+      const text = serialize(file);
+      if (state.mode !== "files") {
+        if (!(await pathExists(file.path + BACKUP_SUFFIX))) await writePath(file.path + BACKUP_SUFFIX, file.originalText);
+        await writePath(file.path, text);
+      }
+      else {
+        downloadText(file.path, text);
+      }
+      file.dirty = false;
+    }
+    setStatus(state.mode !== "files"
+      ? `Saved ${dirty.length} file${dirty.length === 1 ? "" : "s"} - launch the game to use them`
+      : `Downloaded ${dirty.length} file${dirty.length === 1 ? "" : "s"} - copy them into the mission's db folder`);
+  }
+  catch (e) {
+    setStatus(`Save failed: ${e.message}`, true);
+  }
+  finally {
+    state.saving = false;
+    updateDirty();
+  }
+}
+
+function showTab(name) {
+  for (const b of document.querySelectorAll(".tabs button")) b.setAttribute("aria-selected", String(b.dataset.tab === name));
+  for (const t of ["items", "world", "events"]) $("tab-" + t).hidden = t !== name;
+}
+
+async function guarded(fn) {
+  try { await fn(); }
+  catch (e) {
+    if (e && e.name === "AbortError") return;
+    setStatus(e.message || String(e), true);
+  }
+}
+
+$("open-folder").addEventListener("click", () => guarded(async () => {
+  if (!window.showDirectoryPicker) {
+    setStatus("This browser can't open folders - use Open XML files… instead (or Edge / Chrome).", true);
+    return;
+  }
+  const dir = await window.showDirectoryPicker({ id: "dayz-mission", mode: "readwrite" });
+  await loadFromFolder(dir);
+}));
+$("open-files").addEventListener("click", () => $("file-input").click());
+$("file-input").addEventListener("change", (e) => guarded(async () => {
+  if (e.target.files.length) await loadFromFiles(e.target.files);
+  e.target.value = "";
+}));
+$("save").addEventListener("click", () => guarded(save));
+
+for (const id of ["item-search", "item-category", "item-usage", "item-file", "item-spawning", "item-changed"]) {
+  $(id).addEventListener(id === "item-search" ? "input" : "change", applyItemFilter);
+}
+$("item-prev").addEventListener("click", () => { state.itemPage--; renderItems(); });
+$("item-next").addEventListener("click", () => { state.itemPage++; renderItems(); });
+$("world-search").addEventListener("input", renderWorld);
+$("event-search").addEventListener("input", renderEvents);
+$("event-active").addEventListener("change", renderEvents);
+for (const b of document.querySelectorAll(".tabs button")) b.addEventListener("click", () => showTab(b.dataset.tab));
+
+$("bulk-multiply").addEventListener("click", () => {
+  const factor = Number($("bulk-factor").value);
+  if (!(factor >= 0)) return;
+  bulkItems((item) => {
+    const nominal = Number(childText(item.el, "nominal"));
+    const min = Number(childText(item.el, "min"));
+    if (!nominal && !min) return false;
+    const newNominal = Math.round(nominal * factor);
+    const newMin = Math.min(Math.round(min * factor), newNominal);
+    setChildText(item.el, "nominal", newNominal);
+    setChildText(item.el, "min", newMin);
+  });
+});
+$("bulk-set-lifetime").addEventListener("click", () => {
+  const lifetime = Math.round(Number($("bulk-lifetime").value));
+  if (!(lifetime >= 0)) return;
+  bulkItems((item) => setChildText(item.el, "lifetime", lifetime));
+});
+$("bulk-stop").addEventListener("click", () => {
+  if (!confirm(`Stop ${state.itemFiltered.length} item type(s) from spawning?`)) return;
+  bulkItems((item) => {
+    setChildText(item.el, "nominal", 0);
+    setChildText(item.el, "min", 0);
+  });
+});
+$("bulk-revert").addEventListener("click", () => {
+  bulkItems((item) => {
+    if (!itemChanged(item)) return false;
+    for (const f of ITEM_FIELDS) if (item.orig[f] !== "") setChildText(item.el, f, item.orig[f]);
+  });
+});
+
+if (API_MODE) {
+  history.replaceState(null, "", location.pathname + location.search);
+  $("open-folder").hidden = true;
+  $("open-files").hidden = true;
+  $("welcome").hidden = true;
+  setStatus("Loading mission files…");
+  guarded(loadFromApi);
+}
+
+window.addEventListener("beforeunload", (e) => {
+  if ([...state.files.values()].some((f) => f.dirty)) { e.preventDefault(); e.returnValue = ""; }
+});
+</script>
+</body>
+</html>

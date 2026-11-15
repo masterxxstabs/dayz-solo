@@ -1,0 +1,1895 @@
+FrameWidgetClass SoloShopRoot {
+ position 0.0000 0.0000
+ size 1.0000 1.0000
+ hexactpos 0
+ vexactpos 0
+ hexactsize 0
+ vexactsize 0
+ {
+  PanelWidgetClass Window {
+   position 0.0000 0.0000
+   size 1.0000 1.0000
+   hexactpos 0
+   vexactpos 0
+   hexactsize 0
+   vexactsize 0
+   color 0.045 0.05 0.05 0.97
+   style rover_sim_colorable
+   {
+    PanelWidgetClass Header {
+     position 0.0000 0.0000
+     size 1.0000 0.0850
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     color 0.085 0.095 0.095 1
+     style rover_sim_colorable
+     {
+      TextWidgetClass PlayerName {
+       position 0.0150 0.1000
+       size 0.3000 0.4200
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 1 1 1 1
+       text "Survivor"
+       font "gui/fonts/metron28"
+      }
+      TextWidgetClass TraderName {
+       position 0.0150 0.5400
+       size 0.3000 0.3400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 0.66 0.68 0.66 1
+       text "Solo Trader"
+       font "gui/fonts/metron"
+      }
+      TextWidgetClass Balance {
+       position 0.3200 0.2600
+       size 0.2400 0.4800
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 0.45 0.9 0.45 1
+       text "MONEY: $0"
+       font "gui/fonts/metron28"
+      }
+      TextWidgetClass CashHint {
+       position 0.5650 0.3000
+       size 0.0700 0.4000
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 0.66 0.68 0.66 1
+       text "CASH $"
+       font "gui/fonts/metron"
+      }
+      PanelWidgetClass CashAmountBack {
+       position 0.6350 0.2000
+       size 0.0900 0.6000
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.03 0.035 0.035 1
+       style rover_sim_colorable
+       {
+        EditBoxWidgetClass CashAmount {
+         position 0.0600 0.1200
+         size 0.8800 0.7600
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         font "gui/fonts/metron"
+         color 1 1 1 1
+        }
+       }
+      }
+      PanelWidgetClass CashOutBack {
+       position 0.7300 0.1800
+       size 0.0950 0.6400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.26 0.5 0.27 1
+       style rover_sim_colorable
+       ignorepointer 1
+      }
+      TextWidgetClass CashOutLabel {
+       position 0.7300 0.1800
+       size 0.0950 0.6400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 1 1 1 1
+       text "CASH OUT"
+       font "gui/fonts/metron"
+      }
+      ButtonWidgetClass CashOut {
+       position 0.7300 0.1800
+       size 0.0950 0.6400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 1 1 1 0
+      }
+      PanelWidgetClass PayInBack {
+       position 0.8300 0.1800
+       size 0.1250 0.6400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.12 0.13 0.13 1
+       style rover_sim_colorable
+       ignorepointer 1
+      }
+      TextWidgetClass PayInLabel {
+       position 0.8300 0.1800
+       size 0.1250 0.6400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 1 1 1 1
+       text "PAY IN ALL CASH"
+       font "gui/fonts/metron"
+      }
+      ButtonWidgetClass PayIn {
+       position 0.8300 0.1800
+       size 0.1250 0.6400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 1 1 1 0
+      }
+      PanelWidgetClass CloseBack {
+       position 0.9650 0.1800
+       size 0.0250 0.6400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.45 0.16 0.14 1
+       style rover_sim_colorable
+       ignorepointer 1
+      }
+      TextWidgetClass CloseLabel {
+       position 0.9650 0.1800
+       size 0.0250 0.6400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 1 1 1 1
+       text "X"
+       font "gui/fonts/metron28"
+      }
+      ButtonWidgetClass Close {
+       position 0.9650 0.1800
+       size 0.0250 0.6400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 1 1 1 0
+      }
+     }
+    }
+    PanelWidgetClass Sidebar {
+     position 0.0000 0.0900
+     size 0.0900 0.9100
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     color 0.085 0.095 0.095 1
+     style rover_sim_colorable
+     {
+      PanelWidgetClass NavMarketBack {
+       position 0.0700 0.0200
+       size 0.8600 0.0750
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.12 0.13 0.13 1
+       style rover_sim_colorable
+       ignorepointer 1
+      }
+      TextWidgetClass NavMarketLabel {
+       position 0.0700 0.0200
+       size 0.8600 0.0750
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 1 1 1 1
+       text "MARKET"
+       font "gui/fonts/metron"
+      }
+      ButtonWidgetClass NavMarket {
+       position 0.0700 0.0200
+       size 0.8600 0.0750
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 1 1 1 0
+      }
+      PanelWidgetClass NavInventoryBack {
+       position 0.0700 0.1050
+       size 0.8600 0.0750
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.12 0.13 0.13 1
+       style rover_sim_colorable
+       ignorepointer 1
+      }
+      TextWidgetClass NavInventoryLabel {
+       position 0.0700 0.1050
+       size 0.8600 0.0750
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 1 1 1 1
+       text "INVENTORY"
+       font "gui/fonts/metron"
+      }
+      ButtonWidgetClass NavInventory {
+       position 0.0700 0.1050
+       size 0.8600 0.0750
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 1 1 1 0
+      }
+      PanelWidgetClass NavVehiclesBack {
+       position 0.0700 0.1900
+       size 0.8600 0.0750
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.12 0.13 0.13 1
+       style rover_sim_colorable
+       ignorepointer 1
+      }
+      TextWidgetClass NavVehiclesLabel {
+       position 0.0700 0.1900
+       size 0.8600 0.0750
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 1 1 1 1
+       text "VEHICLES"
+       font "gui/fonts/metron"
+      }
+      ButtonWidgetClass NavVehicles {
+       position 0.0700 0.1900
+       size 0.8600 0.0750
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 1 1 1 0
+      }
+     }
+    }
+    PanelWidgetClass Center {
+     position 0.0980 0.0900
+     size 0.5720 0.8950
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     color 0.065 0.075 0.075 1
+     style rover_sim_colorable
+     {
+      PanelWidgetClass SearchBack {
+       position 0.0150 0.0150
+       size 0.3400 0.0500
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.03 0.035 0.035 1
+       style rover_sim_colorable
+       {
+        EditBoxWidgetClass Search {
+         position 0.0300 0.1000
+         size 0.9400 0.8000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         font "gui/fonts/metron"
+         color 1 1 1 1
+        }
+       }
+      }
+      TextWidgetClass SearchHint {
+       position 0.3700 0.0250
+       size 0.3000 0.0350
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 0.66 0.68 0.66 1
+       text "Search"
+       font "gui/fonts/metron"
+      }
+      PanelWidgetClass CategoryBar {
+       position 0.0150 0.0800
+       size 0.9700 0.0550
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.085 0.095 0.095 1
+       style rover_sim_colorable
+       {
+        PanelWidgetClass CategoryPrevBack {
+         position 0.0000 0.0000
+         size 0.0600 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.12 0.13 0.13 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        TextWidgetClass CategoryPrevLabel {
+         position 0.0000 0.0000
+         size 0.0600 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 1 1 1
+         text "<"
+         font "gui/fonts/metron28"
+        }
+        ButtonWidgetClass CategoryPrev {
+         position 0.0000 0.0000
+         size 0.0600 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 1 1 1 0
+        }
+        TextWidgetClass CategoryName {
+         position 0.0600 0.0000
+         size 0.8800 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 1 1 1
+         text "ALL"
+         font "gui/fonts/metron28"
+        }
+        PanelWidgetClass CategoryNextBack {
+         position 0.9400 0.0000
+         size 0.0600 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.12 0.13 0.13 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        TextWidgetClass CategoryNextLabel {
+         position 0.9400 0.0000
+         size 0.0600 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 1 1 1
+         text ">"
+         font "gui/fonts/metron28"
+        }
+        ButtonWidgetClass CategoryNext {
+         position 0.9400 0.0000
+         size 0.0600 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 1 1 1 0
+        }
+       }
+      }
+      PanelWidgetClass Card0 {
+       position 0.0150 0.1500
+       size 0.1844 0.2400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.16 0.17 0.17 1
+       style rover_sim_colorable
+       {
+        PanelWidgetClass Card0Back {
+         position 0.0200 0.0200
+         size 0.9600 0.9600
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.1 0.11 0.11 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        PanelWidgetClass Card0Owned {
+         position 0.0600 0.0500
+         size 0.0700 0.0700
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.28 0.62 0.3 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        ItemPreviewWidgetClass Card0Preview {
+         position 0.0800 0.0600
+         size 0.8400 0.5500
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+        }
+        TextWidgetClass Card0Name {
+         position 0.0600 0.6300
+         size 0.8800 0.1800
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 1 1 1
+         text ""
+         font "gui/fonts/metron"
+         wrap 1
+        }
+        TextWidgetClass Card0Price {
+         position 0.0600 0.8200
+         size 0.8800 0.1300
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 0.82 0.4 1
+         text ""
+         font "gui/fonts/metron"
+        }
+        ButtonWidgetClass Card0Button {
+         position 0.0000 0.0000
+         size 1.0000 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 1 1 1 0
+        }
+       }
+      }
+      PanelWidgetClass Card1 {
+       position 0.2114 0.1500
+       size 0.1844 0.2400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.16 0.17 0.17 1
+       style rover_sim_colorable
+       {
+        PanelWidgetClass Card1Back {
+         position 0.0200 0.0200
+         size 0.9600 0.9600
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.1 0.11 0.11 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        PanelWidgetClass Card1Owned {
+         position 0.0600 0.0500
+         size 0.0700 0.0700
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.28 0.62 0.3 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        ItemPreviewWidgetClass Card1Preview {
+         position 0.0800 0.0600
+         size 0.8400 0.5500
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+        }
+        TextWidgetClass Card1Name {
+         position 0.0600 0.6300
+         size 0.8800 0.1800
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 1 1 1
+         text ""
+         font "gui/fonts/metron"
+         wrap 1
+        }
+        TextWidgetClass Card1Price {
+         position 0.0600 0.8200
+         size 0.8800 0.1300
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 0.82 0.4 1
+         text ""
+         font "gui/fonts/metron"
+        }
+        ButtonWidgetClass Card1Button {
+         position 0.0000 0.0000
+         size 1.0000 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 1 1 1 0
+        }
+       }
+      }
+      PanelWidgetClass Card2 {
+       position 0.4078 0.1500
+       size 0.1844 0.2400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.16 0.17 0.17 1
+       style rover_sim_colorable
+       {
+        PanelWidgetClass Card2Back {
+         position 0.0200 0.0200
+         size 0.9600 0.9600
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.1 0.11 0.11 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        PanelWidgetClass Card2Owned {
+         position 0.0600 0.0500
+         size 0.0700 0.0700
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.28 0.62 0.3 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        ItemPreviewWidgetClass Card2Preview {
+         position 0.0800 0.0600
+         size 0.8400 0.5500
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+        }
+        TextWidgetClass Card2Name {
+         position 0.0600 0.6300
+         size 0.8800 0.1800
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 1 1 1
+         text ""
+         font "gui/fonts/metron"
+         wrap 1
+        }
+        TextWidgetClass Card2Price {
+         position 0.0600 0.8200
+         size 0.8800 0.1300
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 0.82 0.4 1
+         text ""
+         font "gui/fonts/metron"
+        }
+        ButtonWidgetClass Card2Button {
+         position 0.0000 0.0000
+         size 1.0000 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 1 1 1 0
+        }
+       }
+      }
+      PanelWidgetClass Card3 {
+       position 0.6042 0.1500
+       size 0.1844 0.2400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.16 0.17 0.17 1
+       style rover_sim_colorable
+       {
+        PanelWidgetClass Card3Back {
+         position 0.0200 0.0200
+         size 0.9600 0.9600
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.1 0.11 0.11 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        PanelWidgetClass Card3Owned {
+         position 0.0600 0.0500
+         size 0.0700 0.0700
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.28 0.62 0.3 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        ItemPreviewWidgetClass Card3Preview {
+         position 0.0800 0.0600
+         size 0.8400 0.5500
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+        }
+        TextWidgetClass Card3Name {
+         position 0.0600 0.6300
+         size 0.8800 0.1800
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 1 1 1
+         text ""
+         font "gui/fonts/metron"
+         wrap 1
+        }
+        TextWidgetClass Card3Price {
+         position 0.0600 0.8200
+         size 0.8800 0.1300
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 0.82 0.4 1
+         text ""
+         font "gui/fonts/metron"
+        }
+        ButtonWidgetClass Card3Button {
+         position 0.0000 0.0000
+         size 1.0000 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 1 1 1 0
+        }
+       }
+      }
+      PanelWidgetClass Card4 {
+       position 0.8006 0.1500
+       size 0.1844 0.2400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.16 0.17 0.17 1
+       style rover_sim_colorable
+       {
+        PanelWidgetClass Card4Back {
+         position 0.0200 0.0200
+         size 0.9600 0.9600
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.1 0.11 0.11 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        PanelWidgetClass Card4Owned {
+         position 0.0600 0.0500
+         size 0.0700 0.0700
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.28 0.62 0.3 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        ItemPreviewWidgetClass Card4Preview {
+         position 0.0800 0.0600
+         size 0.8400 0.5500
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+        }
+        TextWidgetClass Card4Name {
+         position 0.0600 0.6300
+         size 0.8800 0.1800
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 1 1 1
+         text ""
+         font "gui/fonts/metron"
+         wrap 1
+        }
+        TextWidgetClass Card4Price {
+         position 0.0600 0.8200
+         size 0.8800 0.1300
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 0.82 0.4 1
+         text ""
+         font "gui/fonts/metron"
+        }
+        ButtonWidgetClass Card4Button {
+         position 0.0000 0.0000
+         size 1.0000 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 1 1 1 0
+        }
+       }
+      }
+      PanelWidgetClass Card5 {
+       position 0.0150 0.4050
+       size 0.1844 0.2400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.16 0.17 0.17 1
+       style rover_sim_colorable
+       {
+        PanelWidgetClass Card5Back {
+         position 0.0200 0.0200
+         size 0.9600 0.9600
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.1 0.11 0.11 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        PanelWidgetClass Card5Owned {
+         position 0.0600 0.0500
+         size 0.0700 0.0700
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.28 0.62 0.3 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        ItemPreviewWidgetClass Card5Preview {
+         position 0.0800 0.0600
+         size 0.8400 0.5500
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+        }
+        TextWidgetClass Card5Name {
+         position 0.0600 0.6300
+         size 0.8800 0.1800
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 1 1 1
+         text ""
+         font "gui/fonts/metron"
+         wrap 1
+        }
+        TextWidgetClass Card5Price {
+         position 0.0600 0.8200
+         size 0.8800 0.1300
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 0.82 0.4 1
+         text ""
+         font "gui/fonts/metron"
+        }
+        ButtonWidgetClass Card5Button {
+         position 0.0000 0.0000
+         size 1.0000 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 1 1 1 0
+        }
+       }
+      }
+      PanelWidgetClass Card6 {
+       position 0.2114 0.4050
+       size 0.1844 0.2400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.16 0.17 0.17 1
+       style rover_sim_colorable
+       {
+        PanelWidgetClass Card6Back {
+         position 0.0200 0.0200
+         size 0.9600 0.9600
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.1 0.11 0.11 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        PanelWidgetClass Card6Owned {
+         position 0.0600 0.0500
+         size 0.0700 0.0700
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.28 0.62 0.3 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        ItemPreviewWidgetClass Card6Preview {
+         position 0.0800 0.0600
+         size 0.8400 0.5500
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+        }
+        TextWidgetClass Card6Name {
+         position 0.0600 0.6300
+         size 0.8800 0.1800
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 1 1 1
+         text ""
+         font "gui/fonts/metron"
+         wrap 1
+        }
+        TextWidgetClass Card6Price {
+         position 0.0600 0.8200
+         size 0.8800 0.1300
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 0.82 0.4 1
+         text ""
+         font "gui/fonts/metron"
+        }
+        ButtonWidgetClass Card6Button {
+         position 0.0000 0.0000
+         size 1.0000 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 1 1 1 0
+        }
+       }
+      }
+      PanelWidgetClass Card7 {
+       position 0.4078 0.4050
+       size 0.1844 0.2400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.16 0.17 0.17 1
+       style rover_sim_colorable
+       {
+        PanelWidgetClass Card7Back {
+         position 0.0200 0.0200
+         size 0.9600 0.9600
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.1 0.11 0.11 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        PanelWidgetClass Card7Owned {
+         position 0.0600 0.0500
+         size 0.0700 0.0700
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.28 0.62 0.3 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        ItemPreviewWidgetClass Card7Preview {
+         position 0.0800 0.0600
+         size 0.8400 0.5500
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+        }
+        TextWidgetClass Card7Name {
+         position 0.0600 0.6300
+         size 0.8800 0.1800
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 1 1 1
+         text ""
+         font "gui/fonts/metron"
+         wrap 1
+        }
+        TextWidgetClass Card7Price {
+         position 0.0600 0.8200
+         size 0.8800 0.1300
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 0.82 0.4 1
+         text ""
+         font "gui/fonts/metron"
+        }
+        ButtonWidgetClass Card7Button {
+         position 0.0000 0.0000
+         size 1.0000 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 1 1 1 0
+        }
+       }
+      }
+      PanelWidgetClass Card8 {
+       position 0.6042 0.4050
+       size 0.1844 0.2400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.16 0.17 0.17 1
+       style rover_sim_colorable
+       {
+        PanelWidgetClass Card8Back {
+         position 0.0200 0.0200
+         size 0.9600 0.9600
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.1 0.11 0.11 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        PanelWidgetClass Card8Owned {
+         position 0.0600 0.0500
+         size 0.0700 0.0700
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.28 0.62 0.3 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        ItemPreviewWidgetClass Card8Preview {
+         position 0.0800 0.0600
+         size 0.8400 0.5500
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+        }
+        TextWidgetClass Card8Name {
+         position 0.0600 0.6300
+         size 0.8800 0.1800
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 1 1 1
+         text ""
+         font "gui/fonts/metron"
+         wrap 1
+        }
+        TextWidgetClass Card8Price {
+         position 0.0600 0.8200
+         size 0.8800 0.1300
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 0.82 0.4 1
+         text ""
+         font "gui/fonts/metron"
+        }
+        ButtonWidgetClass Card8Button {
+         position 0.0000 0.0000
+         size 1.0000 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 1 1 1 0
+        }
+       }
+      }
+      PanelWidgetClass Card9 {
+       position 0.8006 0.4050
+       size 0.1844 0.2400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.16 0.17 0.17 1
+       style rover_sim_colorable
+       {
+        PanelWidgetClass Card9Back {
+         position 0.0200 0.0200
+         size 0.9600 0.9600
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.1 0.11 0.11 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        PanelWidgetClass Card9Owned {
+         position 0.0600 0.0500
+         size 0.0700 0.0700
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.28 0.62 0.3 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        ItemPreviewWidgetClass Card9Preview {
+         position 0.0800 0.0600
+         size 0.8400 0.5500
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+        }
+        TextWidgetClass Card9Name {
+         position 0.0600 0.6300
+         size 0.8800 0.1800
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 1 1 1
+         text ""
+         font "gui/fonts/metron"
+         wrap 1
+        }
+        TextWidgetClass Card9Price {
+         position 0.0600 0.8200
+         size 0.8800 0.1300
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 0.82 0.4 1
+         text ""
+         font "gui/fonts/metron"
+        }
+        ButtonWidgetClass Card9Button {
+         position 0.0000 0.0000
+         size 1.0000 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 1 1 1 0
+        }
+       }
+      }
+      PanelWidgetClass Card10 {
+       position 0.0150 0.6600
+       size 0.1844 0.2400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.16 0.17 0.17 1
+       style rover_sim_colorable
+       {
+        PanelWidgetClass Card10Back {
+         position 0.0200 0.0200
+         size 0.9600 0.9600
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.1 0.11 0.11 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        PanelWidgetClass Card10Owned {
+         position 0.0600 0.0500
+         size 0.0700 0.0700
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.28 0.62 0.3 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        ItemPreviewWidgetClass Card10Preview {
+         position 0.0800 0.0600
+         size 0.8400 0.5500
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+        }
+        TextWidgetClass Card10Name {
+         position 0.0600 0.6300
+         size 0.8800 0.1800
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 1 1 1
+         text ""
+         font "gui/fonts/metron"
+         wrap 1
+        }
+        TextWidgetClass Card10Price {
+         position 0.0600 0.8200
+         size 0.8800 0.1300
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 0.82 0.4 1
+         text ""
+         font "gui/fonts/metron"
+        }
+        ButtonWidgetClass Card10Button {
+         position 0.0000 0.0000
+         size 1.0000 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 1 1 1 0
+        }
+       }
+      }
+      PanelWidgetClass Card11 {
+       position 0.2114 0.6600
+       size 0.1844 0.2400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.16 0.17 0.17 1
+       style rover_sim_colorable
+       {
+        PanelWidgetClass Card11Back {
+         position 0.0200 0.0200
+         size 0.9600 0.9600
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.1 0.11 0.11 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        PanelWidgetClass Card11Owned {
+         position 0.0600 0.0500
+         size 0.0700 0.0700
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.28 0.62 0.3 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        ItemPreviewWidgetClass Card11Preview {
+         position 0.0800 0.0600
+         size 0.8400 0.5500
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+        }
+        TextWidgetClass Card11Name {
+         position 0.0600 0.6300
+         size 0.8800 0.1800
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 1 1 1
+         text ""
+         font "gui/fonts/metron"
+         wrap 1
+        }
+        TextWidgetClass Card11Price {
+         position 0.0600 0.8200
+         size 0.8800 0.1300
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 0.82 0.4 1
+         text ""
+         font "gui/fonts/metron"
+        }
+        ButtonWidgetClass Card11Button {
+         position 0.0000 0.0000
+         size 1.0000 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 1 1 1 0
+        }
+       }
+      }
+      PanelWidgetClass Card12 {
+       position 0.4078 0.6600
+       size 0.1844 0.2400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.16 0.17 0.17 1
+       style rover_sim_colorable
+       {
+        PanelWidgetClass Card12Back {
+         position 0.0200 0.0200
+         size 0.9600 0.9600
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.1 0.11 0.11 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        PanelWidgetClass Card12Owned {
+         position 0.0600 0.0500
+         size 0.0700 0.0700
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.28 0.62 0.3 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        ItemPreviewWidgetClass Card12Preview {
+         position 0.0800 0.0600
+         size 0.8400 0.5500
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+        }
+        TextWidgetClass Card12Name {
+         position 0.0600 0.6300
+         size 0.8800 0.1800
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 1 1 1
+         text ""
+         font "gui/fonts/metron"
+         wrap 1
+        }
+        TextWidgetClass Card12Price {
+         position 0.0600 0.8200
+         size 0.8800 0.1300
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 0.82 0.4 1
+         text ""
+         font "gui/fonts/metron"
+        }
+        ButtonWidgetClass Card12Button {
+         position 0.0000 0.0000
+         size 1.0000 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 1 1 1 0
+        }
+       }
+      }
+      PanelWidgetClass Card13 {
+       position 0.6042 0.6600
+       size 0.1844 0.2400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.16 0.17 0.17 1
+       style rover_sim_colorable
+       {
+        PanelWidgetClass Card13Back {
+         position 0.0200 0.0200
+         size 0.9600 0.9600
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.1 0.11 0.11 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        PanelWidgetClass Card13Owned {
+         position 0.0600 0.0500
+         size 0.0700 0.0700
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.28 0.62 0.3 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        ItemPreviewWidgetClass Card13Preview {
+         position 0.0800 0.0600
+         size 0.8400 0.5500
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+        }
+        TextWidgetClass Card13Name {
+         position 0.0600 0.6300
+         size 0.8800 0.1800
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 1 1 1
+         text ""
+         font "gui/fonts/metron"
+         wrap 1
+        }
+        TextWidgetClass Card13Price {
+         position 0.0600 0.8200
+         size 0.8800 0.1300
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 0.82 0.4 1
+         text ""
+         font "gui/fonts/metron"
+        }
+        ButtonWidgetClass Card13Button {
+         position 0.0000 0.0000
+         size 1.0000 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 1 1 1 0
+        }
+       }
+      }
+      PanelWidgetClass Card14 {
+       position 0.8006 0.6600
+       size 0.1844 0.2400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.16 0.17 0.17 1
+       style rover_sim_colorable
+       {
+        PanelWidgetClass Card14Back {
+         position 0.0200 0.0200
+         size 0.9600 0.9600
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.1 0.11 0.11 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        PanelWidgetClass Card14Owned {
+         position 0.0600 0.0500
+         size 0.0700 0.0700
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 0.28 0.62 0.3 1
+         style rover_sim_colorable
+         ignorepointer 1
+        }
+        ItemPreviewWidgetClass Card14Preview {
+         position 0.0800 0.0600
+         size 0.8400 0.5500
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+        }
+        TextWidgetClass Card14Name {
+         position 0.0600 0.6300
+         size 0.8800 0.1800
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 1 1 1
+         text ""
+         font "gui/fonts/metron"
+         wrap 1
+        }
+        TextWidgetClass Card14Price {
+         position 0.0600 0.8200
+         size 0.8800 0.1300
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         ignorepointer 1
+         color 1 0.82 0.4 1
+         text ""
+         font "gui/fonts/metron"
+        }
+        ButtonWidgetClass Card14Button {
+         position 0.0000 0.0000
+         size 1.0000 1.0000
+         hexactpos 0
+         vexactpos 0
+         hexactsize 0
+         vexactsize 0
+         color 1 1 1 0
+        }
+       }
+      }
+      PanelWidgetClass PagePrevBack {
+       position 0.3600 0.9150
+       size 0.0600 0.0550
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.12 0.13 0.13 1
+       style rover_sim_colorable
+       ignorepointer 1
+      }
+      TextWidgetClass PagePrevLabel {
+       position 0.3600 0.9150
+       size 0.0600 0.0550
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 1 1 1 1
+       text "<"
+       font "gui/fonts/metron28"
+      }
+      ButtonWidgetClass PagePrev {
+       position 0.3600 0.9150
+       size 0.0600 0.0550
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 1 1 1 0
+      }
+      TextWidgetClass PageText {
+       position 0.4300 0.9150
+       size 0.1400 0.0550
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 1 1 1 1
+       text "1 / 1"
+       font "gui/fonts/metron28"
+      }
+      PanelWidgetClass PageNextBack {
+       position 0.5800 0.9150
+       size 0.0600 0.0550
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.12 0.13 0.13 1
+       style rover_sim_colorable
+       ignorepointer 1
+      }
+      TextWidgetClass PageNextLabel {
+       position 0.5800 0.9150
+       size 0.0600 0.0550
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 1 1 1 1
+       text ">"
+       font "gui/fonts/metron28"
+      }
+      ButtonWidgetClass PageNext {
+       position 0.5800 0.9150
+       size 0.0600 0.0550
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 1 1 1 0
+      }
+     }
+    }
+    PanelWidgetClass Detail {
+     position 0.6800 0.0900
+     size 0.3100 0.8950
+     hexactpos 0
+     vexactpos 0
+     hexactsize 0
+     vexactsize 0
+     color 0.065 0.075 0.075 1
+     style rover_sim_colorable
+     {
+      TextWidgetClass DetailTitle {
+       position 0.0000 0.0100
+       size 1.0000 0.0500
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 1 1 1 1
+       text "PRODUCT INFORMATION"
+       font "gui/fonts/metron28"
+      }
+      ItemPreviewWidgetClass Preview {
+       position 0.0600 0.0800
+       size 0.8800 0.4000
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+      }
+      TextWidgetClass ItemName {
+       position 0.0600 0.5000
+       size 0.8800 0.0700
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 1 1 1 1
+       text "Pick an item"
+       font "gui/fonts/metron28"
+       wrap 1
+      }
+      TextWidgetClass Owned {
+       position 0.0600 0.5750
+       size 0.8800 0.0400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 0.66 0.68 0.66 1
+       text ""
+       font "gui/fonts/metron"
+      }
+      TextWidgetClass QuantityLabel {
+       position 0.0600 0.6480
+       size 0.4000 0.0400
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 0.66 0.68 0.66 1
+       text "QUANTITY"
+       font "gui/fonts/metron"
+      }
+      PanelWidgetClass MinusBack {
+       position 0.5000 0.6350
+       size 0.1000 0.0600
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.12 0.13 0.13 1
+       style rover_sim_colorable
+       ignorepointer 1
+      }
+      TextWidgetClass MinusLabel {
+       position 0.5000 0.6350
+       size 0.1000 0.0600
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 1 1 1 1
+       text "<"
+       font "gui/fonts/metron28"
+      }
+      ButtonWidgetClass Minus {
+       position 0.5000 0.6350
+       size 0.1000 0.0600
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 1 1 1 0
+      }
+      TextWidgetClass Quantity {
+       position 0.6100 0.6350
+       size 0.1200 0.0600
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 1 1 1 1
+       text "1"
+       font "gui/fonts/metron28"
+      }
+      PanelWidgetClass PlusBack {
+       position 0.7400 0.6350
+       size 0.1000 0.0600
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.12 0.13 0.13 1
+       style rover_sim_colorable
+       ignorepointer 1
+      }
+      TextWidgetClass PlusLabel {
+       position 0.7400 0.6350
+       size 0.1000 0.0600
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 1 1 1 1
+       text ">"
+       font "gui/fonts/metron28"
+      }
+      ButtonWidgetClass Plus {
+       position 0.7400 0.6350
+       size 0.1000 0.0600
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 1 1 1 0
+      }
+      PanelWidgetClass BuyBack {
+       position 0.0600 0.7300
+       size 0.4200 0.0850
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.26 0.5 0.27 1
+       style rover_sim_colorable
+       ignorepointer 1
+      }
+      TextWidgetClass BuyLabel {
+       position 0.0600 0.7300
+       size 0.4200 0.0850
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 1 1 1 1
+       text "BUY"
+       font "gui/fonts/metron28"
+      }
+      ButtonWidgetClass Buy {
+       position 0.0600 0.7300
+       size 0.4200 0.0850
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 1 1 1 0
+      }
+      PanelWidgetClass SellBack {
+       position 0.5200 0.7300
+       size 0.4200 0.0850
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 0.55 0.2 0.18 1
+       style rover_sim_colorable
+       ignorepointer 1
+      }
+      TextWidgetClass SellLabel {
+       position 0.5200 0.7300
+       size 0.4200 0.0850
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 1 1 1 1
+       text "SELL"
+       font "gui/fonts/metron28"
+      }
+      ButtonWidgetClass Sell {
+       position 0.5200 0.7300
+       size 0.4200 0.0850
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       color 1 1 1 0
+      }
+      TextWidgetClass Status {
+       position 0.0600 0.8400
+       size 0.8800 0.1200
+       hexactpos 0
+       vexactpos 0
+       hexactsize 0
+       vexactsize 0
+       ignorepointer 1
+       color 0.66 0.68 0.66 1
+       text ""
+       font "gui/fonts/metron"
+       wrap 1
+      }
+     }
+    }
+   }
+  }
+ }
+}
