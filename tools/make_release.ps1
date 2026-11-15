@@ -36,6 +36,7 @@ try {
     $robocopyArgs = @($ROOT_DIR, $target, '/E', '/NFL', '/NDL', '/NJH', '/NJS', '/NP', '/XD') + $EXCLUDE_DIRS + @('/XF') + $EXCLUDE_FILES
     & robocopy @robocopyArgs | Out-Null
     if ($LASTEXITCODE -ge 8) { throw "Copying the files failed (robocopy code $LASTEXITCODE)." }
+    $global:LASTEXITCODE = 0
     foreach ($personal in $PERSONAL_SETTINGS) { Remove-Item -LiteralPath (Join-Path $target $personal) -Force -ErrorAction SilentlyContinue }
     if (-not (Test-Path -LiteralPath (Join-Path $target 'config\defaults\launcher.json'))) { throw 'config\defaults is missing - nothing to make the settings from.' }
     $leaked = @(Get-ChildItem -LiteralPath $target -Recurse -Force -File | Where-Object { $_.Name -like '*.biprivatekey' -or $_.Name -eq '.app-token' })
