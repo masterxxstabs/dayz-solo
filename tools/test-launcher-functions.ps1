@@ -76,7 +76,7 @@ $sample = Find-TraderSample @(
     [pscustomobject]@{ Path = $snippetMod; LinkName = '@Cars' },
     [pscustomobject]@{ Path = $traderMod; LinkName = '@Trader' }
 )
-if ($sample -and $sample.FullName -like "$traderMod*") { Pass 'Trader example taken from @Trader' } else { Fail "Trader example: $($sample.FullName)" }
+if ($sample -and $sample.FullName -match '\\@Trader\\') { Pass 'Trader example taken from @Trader' } else { Fail "Trader example: $($sample.FullName)" }
 if (-not (Test-TraderConfig (Join-Path $snippetMod 'Trader\TraderConfig.txt'))) { Pass 'item snippets are not taken for a Trader setup' } else { Fail 'snippet accepted as a Trader setup' }
 
 # Workshop IDs behind DayZ's !Workshop links, also when the target is gone
