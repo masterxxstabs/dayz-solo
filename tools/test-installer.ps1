@@ -22,8 +22,10 @@ $dir = Join-Path $env:TEMP 'DayZSolo-install-test'
 $log = Join-Path $env:TEMP 'DayZSolo-setup.log'
 if (Test-Path -LiteralPath $dir) { Remove-Item -LiteralPath $dir -Recurse -Force }
 
-$install = Start-Process -FilePath (Resolve-Path $Setup).Path -PassThru -Wait `
+# Not -Wait: that also waits for the app the installer starts at the end, which keeps running.
+$install = Start-Process -FilePath (Resolve-Path $Setup).Path -PassThru `
     -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- /DIR=`"$dir`" /LOG=`"$log`""
+if (-not $install.WaitForExit(300000)) { Fail 'installer did not finish in 5 minutes'; exit 1 }
 if ($install.ExitCode -eq 0) { Pass 'silent install' } else { Fail "installer exit code $($install.ExitCode)" }
 
 foreach ($file in 'DayZSolo.ps1', 'DayZSoloWorkshop.ps1', 'app\DayZSoloApp.ps1', 'app\index.html', 'app\dayzsolo.ico', 'VERSION', 'update.json',
@@ -64,7 +66,8 @@ if (Test-Path -LiteralPath $tokenFile) {
 else { Fail 'the app did not start after installing' }
 Get-Process -Name msedge -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 
-$uninstall = Start-Process -FilePath (Join-Path $dir 'unins000.exe') -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART' -PassThru -Wait
+$uninstall = Start-Process -FilePath (Join-Path $dir 'unins000.exe') -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART' -PassThru
+[void]$uninstall.WaitForExit(120000)
 $deadline = (Get-Date).AddSeconds(60)
 while (((Test-Path -LiteralPath (Join-Path $dir 'unins000.exe')) -or (Test-Path -LiteralPath $shortcut)) -and (Get-Date) -lt $deadline) { Start-Sleep -Seconds 2 }
 if (-not (Test-Path -LiteralPath (Join-Path $dir 'DayZSolo.ps1')) -and -not (Test-Path -LiteralPath $shortcut)) { Pass 'uninstall removed the program and shortcut' }
