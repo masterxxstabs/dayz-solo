@@ -103,10 +103,11 @@ Co-op (two PCs, ideally two Steam accounts):
 - [ ] Commit and push to `main`; the **Checks** workflow on GitHub must pass (it parses every
       script with Windows PowerShell 5.1, compiles the C#, checks the page's JavaScript, asks the
       Steam Web API about a mod and starts the app).
-- [ ] Tag and push: `git tag v1.2.0` then `git push origin v1.2.0`. The **Release** workflow
-      runs the checks again, builds `DayZSolo-Setup-1.2.0.exe` (Inno Setup) and
-      `DayZSolo-1.2.0.zip` (`tools\make_release.ps1`), writes `SHA256SUMS.txt` and publishes the
-      release with the CHANGELOG notes. Installed copies offer the update within a few hours.
+- [ ] Pushing a changed `VERSION` to `main` starts the **Release** workflow (or run it by hand
+      from the Actions tab). It runs the checks again, builds `DayZSolo-Setup-1.2.0.exe`
+      (Inno Setup) and `DayZSolo-1.2.0.zip` (`tools\make_release.ps1`), writes `SHA256SUMS.txt`,
+      creates the `v1.2.0` tag and publishes the release with the CHANGELOG notes. A version
+      that is already published is skipped. Installed copies offer the update within a few hours.
 - [ ] Install the new Setup over the previous version: settings and world are kept, the app
       opens again, and Tools > Updates says it is the newest version.
 - [ ] From the previous installed version, **Update now** installs it and reopens the app.
