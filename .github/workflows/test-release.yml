@@ -45,4 +45,4 @@ jobs:
         shell: powershell
         run: |
           $setup = Get-ChildItem from -Filter 'DayZSolo-Setup-*.exe' | Select-Object -First 1
-          .\tools\test-update.ps1 -FromSetup $setup.FullName -FromVersion '${{ inputs.from }}'.TrimStart('v') -ToVersion $env:TAG.TrimStart('v')
+          .\tools\test-update.ps1 -FromSetup $setup.FullName -FromVersion ('${{ inputs.from }}'.TrimStart('v')) -ToVersion ($env:TAG.TrimStart('v'))
