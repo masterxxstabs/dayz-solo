@@ -366,7 +366,9 @@ function Get-SteamLibraries {
 }
 
 function Get-WorkshopDirs {
-    $candidates = @(Get-SteamLibraries | ForEach-Object { Join-Path $_ 'steamapps\workshop' })
+    $candidates = @()
+    $libraries = Get-SteamLibraries
+    foreach ($library in $libraries) { $candidates += Join-Path $library 'steamapps\workshop' }
     if ($ClientDir) { $candidates += Join-Path (Split-Path (Split-Path $ClientDir)) 'workshop' }
     $dirs = @()
     foreach ($dir in $candidates) {

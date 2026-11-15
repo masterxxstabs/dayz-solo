@@ -14,7 +14,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Windows PowerShell 5.1 checks
         shell: powershell
         run: .\tools\ci-checks.ps1
