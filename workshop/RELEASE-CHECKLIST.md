@@ -108,6 +108,10 @@ Co-op (two PCs, ideally two Steam accounts):
       (Inno Setup) and `DayZSolo-1.2.0.zip` (`tools\make_release.ps1`), writes `SHA256SUMS.txt`,
       creates the `v1.2.0` tag and publishes the release with the CHANGELOG notes. A version
       that is already published is skipped. Installed copies offer the update within a few hours.
+- [ ] Don't push changes to `.github/workflows` while a Release run is going: GitHub then refuses
+      to create the tag (HTTP 403). If it happens, run the Release workflow again by hand.
+- [ ] Actions > **Test published installer** with `from` = the previous tag installs that
+      version and lets its app update itself to the new one; it must pass.
 - [ ] Install the new Setup over the previous version: settings and world are kept, the app
       opens again, and Tools > Updates says it is the newest version.
 - [ ] From the previous installed version, **Update now** installs it and reopens the app.
