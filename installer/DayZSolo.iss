@@ -8,7 +8,6 @@
 #define AppName "DayZ Solo"
 #define Repo "https://github.com/masterxxstabs/dayz-solo"
 #define PowerShell "{sysnative}\WindowsPowerShell\v1.0\powershell.exe"
-#define AppArgs "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\app\DayZSoloApp.ps1"""
 
 [Setup]
 AppId={{7CBDBF28-3850-443F-ACFF-FA7510850BA1}
@@ -40,16 +39,15 @@ RestartApplications=no
 Name: "desktopicon"; Description: "Create a desktop shortcut"
 
 [Files]
-Source: "..\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; \
-  Excludes: "\.git,\.github,\.gitattributes,\.gitignore,\installer,\dist,\signing,*.biprivatekey,\config\launcher.json,\config\SoloSurvivor.json,\config\app-ui.json,\config\.logs,\config\.cache,\config\.app-token,\config\.session.json,\config\.join.json,\config\.coop-password,\config\Trader"
+Source: "..\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "\.git,\.github,\.gitattributes,\.gitignore,\installer,\dist,\signing,*.biprivatekey,\config\launcher.json,\config\SoloSurvivor.json,\config\app-ui.json,\config\.logs,\config\.cache,\config\.app-token,\config\.session.json,\config\.join.json,\config\.coop-password,\config\Trader"
 
 [Icons]
-Name: "{autoprograms}\{#AppName}"; Filename: "{#PowerShell}"; Parameters: "{#AppArgs}"; WorkingDir: "{app}"; IconFilename: "{app}\app\dayzsolo.ico"; Comment: "Single-player and co-op DayZ"
-Name: "{autodesktop}\{#AppName}"; Filename: "{#PowerShell}"; Parameters: "{#AppArgs}"; WorkingDir: "{app}"; IconFilename: "{app}\app\dayzsolo.ico"; Comment: "Single-player and co-op DayZ"; Tasks: desktopicon
+Name: "{autoprograms}\{#AppName}"; Filename: "{#PowerShell}"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\app\DayZSoloApp.ps1"""; WorkingDir: "{app}"; IconFilename: "{app}\app\dayzsolo.ico"; Comment: "Single-player and co-op DayZ"
+Name: "{autodesktop}\{#AppName}"; Filename: "{#PowerShell}"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\app\DayZSoloApp.ps1"""; WorkingDir: "{app}"; IconFilename: "{app}\app\dayzsolo.ico"; Comment: "Single-player and co-op DayZ"; Tasks: desktopicon
 
 [Run]
 ; Also runs after a silent update, which is how the app comes back by itself.
-Filename: "{#PowerShell}"; Parameters: "{#AppArgs}"; WorkingDir: "{app}"; Description: "Start DayZ Solo"; Flags: postinstall nowait runhidden
+Filename: "{#PowerShell}"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\app\DayZSoloApp.ps1"""; WorkingDir: "{app}"; Description: "Start DayZ Solo"; Flags: postinstall nowait runhidden
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\config\.logs"
