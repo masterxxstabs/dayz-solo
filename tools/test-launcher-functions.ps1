@@ -90,6 +90,11 @@ Remove-Item -LiteralPath $content -Recurse -Force
 if ((Get-LinkedWorkshopId $link) -eq '1559212036') { Pass 'Workshop ID read from a link whose mod is gone' } else { Fail "broken link ID: $(Get-LinkedWorkshopId $link)" }
 if ((Get-LinkedWorkshopId (Join-Path $work 'mods\@Plain')) -eq '-') { Pass 'plain folders have no Workshop ID' } else { Fail 'plain folder got an ID' }
 
+# The game gets each mod's real folder, not a link (links can be refused with error 448)
+$gameDir = Join-Path $work 'DayZ'
+$arg = Get-ClientModArg $gameDir ([pscustomobject]@{ Path = $plain; LinkName = '@Plain' })
+if ($arg -eq [IO.Path]::GetFullPath($plain)) { Pass 'the game is given the real mod folder' } else { Fail "client mod arg: $arg" }
+
 # No Workshop folders at all must not crash
 try {
     $none = @(Get-WorkshopMods @())

@@ -511,6 +511,15 @@ function Install-ModLink([string]$GameDir, $Mod) {
     return "$MOD_LINK_DIR\$($Mod.LinkName)"
 }
 
+# The game is given each mod's real folder. Windows can refuse to let the game follow folder
+# links ("untrusted mount point", error 448); it then starts without those mods and crashes once
+# a modded item comes near. A path with ';' can't go in -mod, so only that falls back to a link.
+function Get-ClientModArg([string]$GameDir, $Mod) {
+    $full = [IO.Path]::GetFullPath($Mod.Path)
+    if ($full.Contains(';')) { return Install-ModLink $GameDir $Mod }
+    return $full
+}
+
 function Copy-ModKeys([string]$ServerDir, $Mod) {
     $keysDir = Join-Path $ServerDir 'keys'
     New-Item -ItemType Directory -Force -Path $keysDir | Out-Null
@@ -2105,7 +2114,7 @@ function Invoke-JoinFriend($Cfg, [string]$ClientDir, [string[]]$Libraries, $Requ
     $sorted = @(Sort-ModsByDependency $mods @())
     $modArgs = @()
     foreach ($mod in $sorted) {
-        $modArgs += Install-ModLink $ClientDir $mod
+        $modArgs += Get-ClientModArg $ClientDir $mod
         Write-Info "mod  $($mod.LinkName)"
     }
     $clientArgs = @("-connect=$address", "-port=$port", "`"-name=$($Cfg.playerName)`"", '-nosplash', '-skipintro')
@@ -3397,7 +3406,7 @@ $serverModArgs = @()
 $serverOnlyModArgs = @()
 $unsignedMods = @()
 foreach ($mod in $clientMods) {
-    $clientModArgs += Install-ModLink $clientDir $mod
+    $clientModArgs += Get-ClientModArg $clientDir $mod
     $serverModArgs += Install-ModLink $serverDir $mod
     $keyCount = Copy-ModKeys $serverDir $mod
     if ($keyCount -eq 0) { $unsignedMods += $mod.LinkName }

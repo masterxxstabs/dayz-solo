@@ -2,6 +2,13 @@
 
 Each `## version` section becomes the release notes the app shows under "What's new".
 
+## 1.1.5
+
+- Fixed the game crashing (or being kicked while loading) with many mods: the game is now
+  given each mod's real folder. Windows had been refusing to let the game follow DayZ Solo's
+  folder links ("untrusted mount point", error 448 in the game log), so the game ran without
+  the mods and crashed as soon as a modded item or car came near.
+
 ## 1.1.4
 
 - Logs tab: the game's own logs are there too: "Game (.RPT)", "Game script log" and "Game
