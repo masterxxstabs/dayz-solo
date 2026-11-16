@@ -138,7 +138,7 @@
     "serverTimeAcceleration": 1,
     "serverNightTimeAcceleration": 1,
     "persistentTime": true,
-    "serverReadyTimeoutSeconds": 180,
+    "serverReadyTimeoutSeconds": 900,
     "serverReadyExtraWaitSeconds": 10,
     "serverShutdownTimeoutSeconds": 90,
     "clientPath": "",

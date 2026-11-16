@@ -2,6 +2,14 @@
 
 Each `## version` section becomes the release notes the app shows under "What's new".
 
+## 1.1.7
+
+- Fixed "can't join" with many mods: the game was started as soon as the server opened its
+  port (or after 3 minutes at most), while the server could still be loading the map and mods
+  for several minutes, so the game got dropped back to the menu. DayZ Solo now waits for the
+  server log to say it takes players ("Player connect enabled"), up to 15 minutes, and shows
+  how long it's taking.
+
 ## 1.1.6
 
 - Mods tab: a search bar. Type part of a name, a Workshop ID or a status ("update available",

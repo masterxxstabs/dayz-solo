@@ -77,6 +77,8 @@ $MOD_LINK_DIR = 'SoloMods'
 $SERVER_CONFIG_NAME = 'serverDZ_solo.cfg'
 $PROFILES_DIR_NAME = 'profiles_solo'
 $BATTLEYE_DISABLED_NAME = 'battleye.disabled-by-dayzsolo'
+$SERVER_READY_LOG_LINE = 'Player connect enabled'
+$SERVER_READY_MIN_TIMEOUT_SECONDS = 900
 $LOOT_SNAPSHOT_SUFFIX = '.dayzsolo-unscaled'
 $LOOT_VARIETY_EXTRA = 40
 $CREATED_FILE_SUFFIX = '.dayzsolo-created'
@@ -241,7 +243,7 @@ function Read-LauncherConfig([string]$Path) {
         serverTimeAcceleration       = 1
         serverNightTimeAcceleration  = 1
         persistentTime               = $true
-        serverReadyTimeoutSeconds    = 180
+        serverReadyTimeoutSeconds    = 900
         serverReadyExtraWaitSeconds  = 10
         serverShutdownTimeoutSeconds = 90
         clientPath                   = ''
@@ -2166,17 +2168,65 @@ function Test-UdpPortBound([int]$Port) {
     return [bool](netstat -an -p UDP | Select-String -Pattern ":$Port\s" -Quiet)
 }
 
-function Wait-ServerReady($Process, [int]$Port, [int]$TimeoutSeconds, [int]$ExtraWaitSeconds) {
-    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+# The server's .RPT of this start, read from where the last call stopped (the server keeps it open).
+function Read-ServerLogPart($State, [string]$ProfilesDir, [datetime]$Since) {
+    if (-not $State.Path) {
+        $log = Get-ChildItem -LiteralPath $ProfilesDir -Filter 'DayZServer_x64*.RPT' -File -ErrorAction SilentlyContinue |
+            Where-Object { $_.CreationTime -ge $Since.AddSeconds(-5) } | Sort-Object CreationTime -Descending | Select-Object -First 1
+        if (-not $log) { return '' }
+        $State.Path = $log.FullName
+        $State.Offset = [long]0
+    }
+    try {
+        $stream = New-Object IO.FileStream($State.Path, [IO.FileMode]::Open, [IO.FileAccess]::Read, ([IO.FileShare]::ReadWrite -bor [IO.FileShare]::Delete))
+        try {
+            if ($stream.Length -le $State.Offset) { return '' }
+            [void]$stream.Seek($State.Offset, [IO.SeekOrigin]::Begin)
+            $buffer = New-Object byte[] ($stream.Length - $State.Offset)
+            $read = $stream.Read($buffer, 0, $buffer.Length)
+            $State.Offset += $read
+            return [Text.Encoding]::UTF8.GetString($buffer, 0, $read)
+        }
+        finally { $stream.Dispose() }
+    }
+    catch { return '' }
+}
+
+# The port opens long before the server takes players; with many mods it can load for minutes,
+# and a game that connects early is dropped back to the menu. 'Player connect enabled' in the
+# server log is the real signal; without a log the old port check is used.
+function Wait-ServerReady($Process, [int]$Port, [int]$TimeoutSeconds, [int]$ExtraWaitSeconds, [string]$ProfilesDir, [datetime]$Started) {
+    $limit = [math]::Max($TimeoutSeconds, $SERVER_READY_MIN_TIMEOUT_SECONDS)
+    $deadline = $Started.AddSeconds($limit)
+    $logState = @{ Path = $null; Offset = [long]0 }
+    $tail = ''
+    $portOpenSince = $null
+    $nextNote = (Get-Date).AddSeconds(30)
+    Write-Info 'Waiting for the server to load the map and mods (a few minutes with many mods)...'
     while ((Get-Date) -lt $deadline) {
         if ($Process.HasExited) { throw "The server exited during startup (code $($Process.ExitCode)). Check the .RPT log in the profiles folder." }
-        if (Test-UdpPortBound $Port) {
+        $tail = ($tail + (Read-ServerLogPart $logState $ProfilesDir $Started))
+        if ($tail.Contains($SERVER_READY_LOG_LINE)) {
+            Write-Info "The server takes players after $([int]((Get-Date) - $Started).TotalSeconds) s."
             Start-Sleep -Seconds $ExtraWaitSeconds
             return
         }
+        if ($tail.Length -gt 4096) { $tail = $tail.Substring($tail.Length - 4096) }
+        if (Test-UdpPortBound $Port) {
+            if (-not $portOpenSince) { $portOpenSince = Get-Date }
+            if (-not $logState.Path -and ((Get-Date) - $portOpenSince).TotalSeconds -ge 60) {
+                Write-Warn "No server log to watch in $ProfilesDir; starting the game now that the port is open."
+                Start-Sleep -Seconds $ExtraWaitSeconds
+                return
+            }
+        }
+        if ((Get-Date) -ge $nextNote) {
+            Write-Info "  still loading ($([int]((Get-Date) - $Started).TotalSeconds) s)..."
+            $nextNote = (Get-Date).AddSeconds(30)
+        }
         Start-Sleep -Seconds 2
     }
-    Write-Warn "Server did not open port $Port within $TimeoutSeconds s; trying to connect anyway."
+    Write-Warn "The server still wasn't taking players after $limit s; starting the game anyway."
 }
 
 function Wait-ClientExit($Server) {
@@ -3485,6 +3535,7 @@ if ($cfg.extraServerArgs) { $serverArgs += $cfg.extraServerArgs }
 
 Write-Step "Starting private server ($($cfg.map))"
 $serverWindow = if ($Headless) { 'Hidden' } else { 'Minimized' }
+$serverStarted = Get-Date
 $server = Start-Process -FilePath (Join-Path $serverDir "$SERVER_PROCESS.exe") -ArgumentList ($serverArgs -join ' ') `
     -WorkingDirectory $serverDir -WindowStyle $serverWindow -PassThru
 $sessionFile = Join-Path $SCRIPT_DIR "config\$SESSION_FILE_NAME"
@@ -3514,7 +3565,7 @@ else {
 
 $cleanExit = $false
 try {
-    Wait-ServerReady $server $cfg.port $cfg.serverReadyTimeoutSeconds $cfg.serverReadyExtraWaitSeconds
+    Wait-ServerReady $server $cfg.port $cfg.serverReadyTimeoutSeconds $cfg.serverReadyExtraWaitSeconds $profilesDir $serverStarted
 
     $coopInfo = $null
     if ($coop.Enabled) {

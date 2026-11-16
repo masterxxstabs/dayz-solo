@@ -95,6 +95,19 @@ $gameDir = Join-Path $work 'DayZ'
 $arg = Get-ClientModArg $gameDir ([pscustomobject]@{ Path = $plain; LinkName = '@Plain' })
 if ($arg -eq [IO.Path]::GetFullPath($plain)) { Pass 'the game is given the real mod folder' } else { Fail "client mod arg: $arg" }
 
+# The server counts as ready on 'Player connect enabled' in this start's log, read in parts
+$profiles = Join-Path $work 'profiles'
+New-Item -ItemType Directory -Force -Path $profiles | Out-Null
+$since = Get-Date
+$rpt = Join-Path $profiles 'DayZServer_x64_test.RPT'
+[IO.File]::WriteAllText($rpt, "12:00:00 Loading mods`r`n")
+$state = @{ Path = $null; Offset = [long]0 }
+$first = Read-ServerLogPart $state $profiles $since
+[IO.File]::AppendAllText($rpt, "12:03:00 Player connect enabled`r`n")
+$second = Read-ServerLogPart $state $profiles $since
+if ($first -match 'Loading mods' -and $first -notmatch 'connect' -and $second -match 'Player connect enabled' -and $second -notmatch 'Loading') { Pass 'server log read in parts' } else { Fail "server log parts: '$first' / '$second'" }
+if ((Read-ServerLogPart $state $profiles $since) -eq '') { Pass 'nothing new, nothing read' } else { Fail 'read the same part twice' }
+
 # No Workshop folders at all must not crash
 try {
     $none = @(Get-WorkshopMods @())
