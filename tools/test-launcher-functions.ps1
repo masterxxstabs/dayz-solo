@@ -112,6 +112,13 @@ if ((Read-ServerLogPart $state $profiles $since) -eq '') { Pass 'nothing new, no
 if ((Format-ExitCode -1073741819) -match 'access violation' -and (Format-ExitCode -1073741819) -match '0xC0000005') { Pass 'crash exit code explained' } else { Fail "exit code: $(Format-ExitCode -1073741819)" }
 if (("12:00 Unknown object class 'pond'" -match $SERVER_LOG_NOISE) -and -not ('12:00 SCRIPT (E): NULL pointer' -match $SERVER_LOG_NOISE)) { Pass 'model noise filtered, errors kept' } else { Fail 'noise filter' }
 
+# Mods turned off since the world was saved are found
+$missionTest = Join-Path $work 'mission-world'
+New-Item -ItemType Directory -Force -Path (Join-Path $missionTest 'storage_1') | Out-Null
+Save-WorldMods $missionTest @('@CF', '@GSC_Stalker', '@Trader')
+$removed = @(Get-RemovedWorldMods $missionTest @('@cf', '@Trader'))
+if ($removed.Count -eq 1 -and $removed[0] -eq '@GSC_Stalker') { Pass 'mods turned off since the last save found' } else { Fail "removed world mods: $($removed -join ', ')" }
+
 # No Workshop folders at all must not crash
 try {
     $none = @(Get-WorkshopMods @())

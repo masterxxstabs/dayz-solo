@@ -78,6 +78,7 @@ $SERVER_CONFIG_NAME = 'serverDZ_solo.cfg'
 $PROFILES_DIR_NAME = 'profiles_solo'
 $BATTLEYE_DISABLED_NAME = 'battleye.disabled-by-dayzsolo'
 $SERVER_READY_LOG_LINE = 'Player connect enabled'
+$WORLD_MODS_FILE = 'dayzsolo-world-mods.json'
 $SERVER_READY_MIN_TIMEOUT_SECONDS = 900
 $SERVER_LOG_NOISE = "Unknown object class|No components in|PerfWarning|DamageSystem Warning|Initializing ragdoll|Fresnel n must|missing geometry components|slopelandcontact|Warning Message: (No entry|Size:)"
 $LOOT_SNAPSHOT_SUFFIX = '.dayzsolo-unscaled'
@@ -2207,6 +2208,20 @@ function Format-ExitCode([int]$Code) {
 
 # What the server was doing when it died: the end of its .RPT without the harmless model noise,
 # and the crash report DayZ writes next to it.
+# Mods store their own data with every saved item; the save only reads back with the same mods.
+function Get-RemovedWorldMods([string]$MissionDir, [string[]]$CurrentMods) {
+    $file = Join-Path $MissionDir $WORLD_MODS_FILE
+    if (-not (Test-Path -LiteralPath (Join-Path $MissionDir 'storage_1')) -or -not (Test-Path -LiteralPath $file)) { return @() }
+    try { $saved = @(([IO.File]::ReadAllText($file) | ConvertFrom-Json).mods) } catch { return @() }
+    $current = @($CurrentMods | ForEach-Object { $_.ToLowerInvariant() })
+    return @($saved | Where-Object { $_ -and ($current -notcontains ([string]$_).ToLowerInvariant()) })
+}
+
+function Save-WorldMods([string]$MissionDir, [string[]]$Mods) {
+    $data = [ordered]@{ savedAt = (Get-Date).ToString('s'); mods = @($Mods) }
+    try { [IO.File]::WriteAllText((Join-Path $MissionDir $WORLD_MODS_FILE), ($data | ConvertTo-Json -Depth 3)) } catch { }
+}
+
 function Write-ServerCrashDetails([string]$ProfilesDir, [datetime]$Since, [string]$LogTail) {
     $lines = @($LogTail -split '\r?\n' | Where-Object { $_.Trim() -and $_ -notmatch $SERVER_LOG_NOISE })
     if ($lines.Count) {
@@ -2215,6 +2230,10 @@ function Write-ServerCrashDetails([string]$ProfilesDir, [datetime]$Since, [strin
     }
     $crash = Get-ChildItem -LiteralPath $ProfilesDir -Filter 'crash*.log' -File -ErrorAction SilentlyContinue |
         Where-Object { $_.LastWriteTime -ge $Since.AddSeconds(-5) } | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    if ($LogTail -match 'OnStoreLoad|Scripted variables corrupted|state load does not correspond') {
+        Write-Warn 'The server died reading your saved world: it was saved with a different set of mods (most often one that has been turned off since).'
+        Write-Warn '  Turn that mod back on, or use Tools > Start a fresh world (your old world is kept as a backup).'
+    }
     if ($crash) {
         Write-Warn "The server's crash report ($($crash.Name)):"
         foreach ($line in (Get-Content -LiteralPath $crash.FullName -ErrorAction SilentlyContinue | Where-Object { $_.Trim() } | Select-Object -First 30)) { Write-Info "  $line" }
@@ -3567,6 +3586,12 @@ if ($serverModArgs.Count) { $serverArgs += "`"-mod=$($serverModArgs -join ';')`"
 if ($serverOnlyModArgs.Count) { $serverArgs += "`"-serverMod=$($serverOnlyModArgs -join ';')`"" }
 if ($cfg.extraServerArgs) { $serverArgs += $cfg.extraServerArgs }
 
+$worldModNames = @(@($clientMods) + @($serverOnlyMods) | Where-Object { $_ } | ForEach-Object { $_.LinkName })
+$removedWorldMods = Get-RemovedWorldMods $missionDir $worldModNames
+if ($removedWorldMods.Count) {
+    Write-Warn "Your world was saved with mods that are off now: $(Format-ShortList $removedWorldMods 8)"
+    Write-Warn '  The server may not be able to read what those mods saved and can crash while loading. Turn them back on, or use Tools > Start a fresh world.'
+}
 Write-Step "Starting private server ($($cfg.map))"
 $serverWindow = if ($Headless) { 'Hidden' } else { 'Minimized' }
 $serverStarted = Get-Date
@@ -3600,6 +3625,7 @@ else {
 $cleanExit = $false
 try {
     Wait-ServerReady $server $cfg.port $cfg.serverReadyTimeoutSeconds $cfg.serverReadyExtraWaitSeconds $profilesDir $serverStarted
+    Save-WorldMods $missionDir $worldModNames
 
     $coopInfo = $null
     if ($coop.Enabled) {

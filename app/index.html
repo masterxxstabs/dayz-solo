@@ -728,6 +728,11 @@
         <button data-open="mission">Open folder</button>
       </div>
       <div class="tool">
+        <h3>Fresh world</h3>
+        <p>Starts the map over: loot, cars, bases and your character are new. Use it when the server crashes reading a world saved with other mods. Your old world is kept as a backup in the mission folder.</p>
+        <button id="world-reset" class="danger">Start a fresh world</button>
+      </div>
+      <div class="tool">
         <h3>Server profile</h3>
         <p>Logs, trader setup and Solo Survivor settings the server is using.</p>
         <button data-open="profiles">Open folder</button>
@@ -2624,6 +2629,13 @@ $("admin-teleport-coords").addEventListener("click", () => {
 $("zone-add").addEventListener("click", () => { addZoneRow({ Name: "New zone", Position: [0, 0, 0], Radius: 150 }); scheduleSettingsSave(); });
 $("open-loot").addEventListener("click", () => {
   window.open(`/tools/loot-editor.html?api=1#token=${encodeURIComponent(TOKEN)}`, "dayzsolo-loot", "width=1280,height=880");
+});
+$("world-reset").addEventListener("click", async () => {
+  if (!confirm("Start a fresh world? Loot, cars, bases and your character start over. Your current world is kept as a backup (storage_1.backup-...) in the mission folder.")) return;
+  try {
+    const r = await api("/api/world/reset", { method: "POST" });
+    toast(r.backup ? `Fresh world ready. The old one is in ${r.backup}` : "There was no saved world yet - the next start is fresh anyway.");
+  } catch (e) { toast(e.message, true); }
 });
 for (const b of document.querySelectorAll("[data-open]")) {
   b.addEventListener("click", () => act(() => api("/api/open", { method: "POST", json: { target: b.dataset.open } })));

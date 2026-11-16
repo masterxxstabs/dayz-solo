@@ -2,6 +2,15 @@
 
 Each `## version` section becomes the release notes the app shows under "What's new".
 
+## 1.1.9
+
+- Tools: "Start a fresh world". It moves your world save (storage_1) aside as a backup, so the
+  next start has a new map, loot and character.
+- The launcher remembers which mods your world was saved with and warns before starting when
+  some are off now: mods save their own data with every item, and a world saved with a mod
+  that is gone can crash the server while it loads ("Scripted variables corrupted").
+- When the server crashes for that reason, the launcher log says so.
+
 ## 1.1.8
 
 - When the server stops while loading, the launcher log now says why in words (for example

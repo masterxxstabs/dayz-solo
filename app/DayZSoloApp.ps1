@@ -944,6 +944,22 @@ function Invoke-Api($Context, [string]$Path, [string]$Method) {
             Send-Json $Context @{ ok = $true }
             return
         }
+        '/api/world/reset' {
+            if ($Method -ne 'POST') { Send-Error $Context 405 'Use POST'; return }
+            if ((Get-ServerProcess) -or (Test-LauncherRunning)) { Send-Error $Context 409 'Stop the server first.'; return }
+            $mission = Get-MissionDir
+            if (-not $mission) { Send-Error $Context 404 'The mission folder is unknown; start the server once first.'; return }
+            $storage = Join-Path $mission 'storage_1'
+            if (-not (Test-Path -LiteralPath $storage)) { Send-Json $Context @{ ok = $true; backup = '' }; return }
+            $backupName = "storage_1.backup-$(Get-Date -Format 'yyyyMMdd-HHmmss')"
+            try {
+                Rename-Item -LiteralPath $storage -NewName $backupName
+                Remove-Item -LiteralPath (Join-Path $mission 'dayzsolo-world-mods.json') -Force -ErrorAction SilentlyContinue
+            }
+            catch { Send-Error $Context 500 "Couldn't move the world save: $($_.Exception.Message)"; return }
+            Send-Json $Context @{ ok = $true; backup = (Join-Path $mission $backupName) }
+            return
+        }
         '/api/open' {
             if ($Method -ne 'POST') { Send-Error $Context 405 'Use POST'; return }
             $body = (Read-Body $request) | ConvertFrom-Json
