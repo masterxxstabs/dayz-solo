@@ -2,6 +2,11 @@
 
 Each `## version` section becomes the release notes the app shows under "What's new".
 
+## 1.1.6
+
+- Mods tab: a search bar. Type part of a name, a Workshop ID or a status ("update available",
+  "not downloaded", "server only", "excluded") to narrow the list; Esc clears it.
+
 ## 1.1.5
 
 - Fixed the game crashing (or being kicked while loading) with many mods: the game is now

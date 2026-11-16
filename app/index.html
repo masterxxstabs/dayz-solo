@@ -115,6 +115,7 @@
   pre.log.full { height: calc(100vh - 230px); min-height: 300px; }
   .mods li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 4px; border-bottom: 1px solid var(--border); }
   .mods { list-style: none; margin: 0; padding: 0; }
+  .mods li[hidden] { display: none; }
   .mods .order { width: 28px; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; padding-top: 1px; }
   .mods .name { font-weight: 600; }
   .mods .meta { color: var(--muted); font-size: 12.5px; }
@@ -362,6 +363,10 @@
       <p class="hint" style="margin:0 0 10px">Subscribed Workshop mods load automatically, in dependency order. Untick a mod to leave it out. Changes save by themselves and apply the next time the server starts.</p>
       <p id="ws-status" class="hint" style="margin:0 0 8px"></p>
       <ul id="ws-items" class="ws-items" hidden></ul>
+      <div class="row" style="margin-bottom:6px">
+        <input id="mods-search" type="search" placeholder="Search mods by name, Workshop ID or status" aria-label="Search mods" style="flex:1;min-width:200px">
+        <span id="mods-count" class="hint"></span>
+      </div>
       <div id="mods-loading" class="hint">Loading…</div>
       <ul id="mods" class="mods"></ul>
       <p class="hint" style="margin:10px 0 0"><strong>Resubscribe</strong> (like DZSA) unsubscribes, lets Steam delete the mod and downloads a fresh copy: the fix for a mod that is broken, half-updated or gets you kicked. Steam must be running; updating and resubscribing need the server stopped and DayZ closed.</p>
@@ -1412,10 +1417,29 @@ function isExcluded(name, id) {
   return false;
 }
 
+const searchText = (text) => String(text || "").toLowerCase().replace(/[@_\-]+/g, " ");
+
+// Every word typed must appear in the mod's name, Workshop ID or one of its labels.
+function modMatches(words, mod, kind, id) {
+  if (!words.length) return true;
+  const ws = ui.ws.byId[id];
+  const labels = [
+    kind === "server" ? "server only" : "",
+    kind === "excluded" ? (isExcluded(mod.name, id) ? "excluded" : "not loaded") : "loaded",
+    ws ? WS_LABELS[ws.status] || ws.status : "",
+    (mod.missing || []).length ? "missing needs" : "",
+  ];
+  const haystack = searchText([mod.name, id, ...labels, ...(mod.dependsOn || [])].join(" "));
+  return words.every((w) => haystack.includes(w));
+}
+
 function renderMods() {
   const list = $("mods");
   list.innerHTML = "";
   const m = ui.mods;
+  const words = searchText($("mods-search").value).split(" ").filter(Boolean);
+  let total = 0;
+  let shown = 0;
   const loaded = new Set([...(m.client || []), ...(m.serverOnly || [])].map((x) => modKey(x.name)));
   let order = 1;
   const add = (mod, kind, id) => {
@@ -1463,6 +1487,9 @@ function renderMods() {
       info.appendChild(miss);
     }
     li.appendChild(info);
+    total++;
+    li.hidden = !modMatches(words, mod, kind, id);
+    if (!li.hidden) shown++;
     list.appendChild(li);
   };
   const idFor = (name) => {
@@ -1475,6 +1502,8 @@ function renderMods() {
     if (!loaded.has(modKey(w.name))) add({ name: w.name }, "excluded", String(w.id));
   }
   if (!list.children.length) list.innerHTML = '<li class="hint">No mods found. Subscribe to mods on the Steam Workshop.</li>';
+  else if (words.length && !shown) list.insertAdjacentHTML("beforeend", '<li class="hint">No mods match your search.</li>');
+  $("mods-count").textContent = words.length ? `${shown} of ${total}` : `${total} mods`;
 }
 
 /* ---------- Co-op ---------- */
@@ -2493,6 +2522,10 @@ $("log-source").addEventListener("change", refreshLog);
 $("log-filter").addEventListener("input", () => { ui.log.from = -1; ui.log.file = ""; refreshLog(); });
 $("log-wrap").addEventListener("change", (e) => $("log").classList.toggle("wrap", e.target.checked));
 $("mods-refresh").addEventListener("click", () => { ui.mods = null; loadMods(); });
+$("mods-search").addEventListener("input", () => { if (ui.mods) renderMods(); });
+$("mods-search").addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && e.target.value) { e.target.value = ""; if (ui.mods) renderMods(); }
+});
 $("update-install").addEventListener("click", installUpdate);
 $("update-later").addEventListener("click", () => { if (ui.update) rememberPref("skipUpdate", ui.update.latest); $("update-banner").hidden = true; });
 $("update-notes-toggle").addEventListener("click", () => { $("update-notes").hidden = !$("update-notes").hidden; });
