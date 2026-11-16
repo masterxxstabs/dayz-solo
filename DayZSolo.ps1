@@ -225,6 +225,7 @@ function Read-LauncherConfig([string]$Path) {
         modLoot                      = $null
         modUpdates                   = $null
         verifySignatures             = $true
+        useBattlEye                  = $true
         lootMultiplier               = 1
         lootCategoryMultipliers      = $null
         lootVariety                  = $true
@@ -568,7 +569,7 @@ loginQueueConcurrentPlayers = $slots;
 loginQueueMaxPlayers = $slots;
 instanceId = 1;
 storageAutoFix = 1;
-BattlEye = 1;
+BattlEye = $(ConvertTo-CfgFlag $Cfg.useBattlEye);
 
 class Missions
 {
@@ -2194,6 +2195,16 @@ function Read-ServerLogPart($State, [string]$ProfilesDir, [datetime]$Since) {
     catch { return '' }
 }
 
+# Whether the server really runs BattlEye: its log says so, or BEServer_x64.dll is loaded.
+# $null when it can't be checked, which the caller treats as "yes".
+function Test-ServerBattlEye($Process) {
+    if ($script:ServerBattlEyeInLog) { return $true }
+    try { $modules = @((Get-Process -Id $Process.Id -ErrorAction Stop).Modules | ForEach-Object { $_.ModuleName }) }
+    catch { return $null }
+    if (-not $modules.Count) { return $null }
+    return [bool]($modules | Where-Object { $_ -match '(?i)^BEServer' })
+}
+
 function Format-ExitCode([int]$Code) {
     $hex = '0x{0:X8}' -f $Code
     $meaning = switch ($hex) {
@@ -2252,7 +2263,9 @@ function Wait-ServerReady($Process, [int]$Port, [int]$TimeoutSeconds, [int]$Extr
     $nextNote = (Get-Date).AddSeconds(30)
     Write-Info 'Waiting for the server to load the map and mods (a few minutes with many mods)...'
     while ((Get-Date) -lt $deadline) {
-        $tail = ($tail + (Read-ServerLogPart $logState $ProfilesDir $Started))
+        $part = Read-ServerLogPart $logState $ProfilesDir $Started
+        if ($part -match '(?i)BattlEye Server:') { $script:ServerBattlEyeInLog = $true }
+        $tail = ($tail + $part)
         if ($Process.HasExited) {
             Start-Sleep -Seconds 2
             $tail = ($tail + (Read-ServerLogPart $logState $ProfilesDir $Started))
@@ -3610,22 +3623,33 @@ if ($clientModArgs.Count) { $clientArgs += "`"-mod=$($clientModArgs -join ';')`"
 if ($cfg.extraClientArgs) { $clientArgs += $cfg.extraClientArgs }
 
 $clientExe = Join-Path $clientDir "$CLIENT_PROCESS.exe"
-# The DayZ server always runs BattlEye (BattlEye = 0 is ignored), and a game started without it
-# is kicked for "Client not responding" about a minute in, so the game starts through DayZ_BE.exe.
-$battlEyeLauncher = Join-Path $clientDir $CLIENT_BATTLEYE_LAUNCHER
-if (-not (Test-Path -LiteralPath $battlEyeLauncher)) {
-    Write-Warn "$CLIENT_BATTLEYE_LAUNCHER is missing from $clientDir, so the game starts without BattlEye and the server will kick you. Verify DayZ's files in Steam."
-}
-else {
-    Write-Info "The game starts through $CLIENT_BATTLEYE_LAUNCHER (your server runs BattlEye)"
-    $clientExe = $battlEyeLauncher
-    $clientArgs = @('-exe', "$CLIENT_PROCESS.exe") + $clientArgs
-}
+$script:ServerBattlEyeInLog = $false
 
 $cleanExit = $false
 try {
     Wait-ServerReady $server $cfg.port $cfg.serverReadyTimeoutSeconds $cfg.serverReadyExtraWaitSeconds $profilesDir $serverStarted
     Save-WorldMods $missionDir $worldModNames
+
+    # A game without BattlEye is kicked by a server that runs it, and BattlEye kicks a game that
+    # freezes for about a minute while loading (slow drives). So the game follows what the server
+    # really does, whatever the setting asked for.
+    $serverBattlEye = Test-ServerBattlEye $server
+    $clientBattlEye = $cfg.useBattlEye -or ($serverBattlEye -ne $false)
+    if (-not $cfg.useBattlEye) {
+        if ($serverBattlEye -eq $false) { Write-Info 'BattlEye is off: the game can take as long as it needs to load in.' }
+        else { Write-Warn 'BattlEye is off in Settings, but the server started it anyway (or it could not be checked), so the game starts through BattlEye.' }
+    }
+    $battlEyeLauncher = Join-Path $clientDir $CLIENT_BATTLEYE_LAUNCHER
+    if ($clientBattlEye) {
+        if (Test-Path -LiteralPath $battlEyeLauncher) {
+            Write-Info "The game starts through $CLIENT_BATTLEYE_LAUNCHER (your server runs BattlEye)"
+            $clientExe = $battlEyeLauncher
+            $clientArgs = @('-exe', "$CLIENT_PROCESS.exe") + $clientArgs
+        }
+        else {
+            Write-Warn "$CLIENT_BATTLEYE_LAUNCHER is missing from $clientDir, so the game starts without BattlEye and the server will kick you. Verify DayZ's files in Steam."
+        }
+    }
 
     $coopInfo = $null
     if ($coop.Enabled) {

@@ -16,6 +16,7 @@
     ],
     "loadLocalModFolders": true,
     "verifySignatures": true,
+    "useBattlEye": true,
     "lootMultiplier": 5,
     "lootCategoryMultipliers": {
         "food": 2

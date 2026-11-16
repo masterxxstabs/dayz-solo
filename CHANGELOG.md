@@ -2,6 +2,14 @@
 
 Each `## version` section becomes the release notes the app shows under "What's new".
 
+## 1.2.1
+
+- "Use BattlEye" is back in Settings, for slow PCs: BattlEye kicks a game that is busy loading
+  for about a minute ("Client not responding"), which happens with many mods on a hard drive.
+  Untick it and the server starts without BattlEye. The launcher checks whether the server really
+  runs without it (its log and its loaded files) and starts the game to match, so a mismatch
+  can't get you kicked either.
+
 ## 1.2.0
 
 - Days survived on screen: a "Day N" counter in the top-left corner while you play. It counts

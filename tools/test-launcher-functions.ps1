@@ -119,6 +119,13 @@ Save-WorldMods $missionTest @('@CF', '@GSC_Stalker', '@Trader')
 $removed = @(Get-RemovedWorldMods $missionTest @('@cf', '@Trader'))
 if ($removed.Count -eq 1 -and $removed[0] -eq '@GSC_Stalker') { Pass 'mods turned off since the last save found' } else { Fail "removed world mods: $($removed -join ', ')" }
 
+# BattlEye check on a process without BEServer loaded
+$script:ServerBattlEyeInLog = $false
+if ((Test-ServerBattlEye (Get-Process -Id $PID)) -eq $false) { Pass 'no BattlEye in a process without BEServer' } else { Fail 'BattlEye found in this test process' }
+$script:ServerBattlEyeInLog = $true
+if ((Test-ServerBattlEye (Get-Process -Id $PID)) -eq $true) { Pass 'BattlEye taken from the server log' } else { Fail 'log flag ignored' }
+$script:ServerBattlEyeInLog = $false
+
 # No Workshop folders at all must not crash
 try {
     $none = @(Get-WorkshopMods @())

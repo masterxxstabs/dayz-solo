@@ -638,6 +638,7 @@
         <label class="check"><input id="s-enableMinimap" type="checkbox"> Minimap (N to show/hide, numpad +/− to zoom)</label>
         <label class="check"><input id="s-disable3rdPerson" type="checkbox"> First person only</label>
         <label class="check"><input id="s-disableCrosshair" type="checkbox"> No crosshair</label>
+        <label class="check" title="Off lets a slow PC (hard drive) take as long as it needs to load in; BattlEye kicks a game that is busy loading for about a minute."><input id="s-useBattlEye" type="checkbox"> Use BattlEye (untick if you get kicked while loading)</label>
         <label class="check"><input id="s-verifySignatures" type="checkbox"> Check mod signatures</label>
         <label class="check"><input id="s-UseFixedSpawn" type="checkbox"> Always spawn new characters at a fixed spot</label>
       </div>
@@ -2336,10 +2337,10 @@ async function saveProfileFile() {
 const LAUNCHER_FIELDS = {
   playerName: "text", map: "text", lootMultiplier: "number", serverTimeAcceleration: "number",
   serverNightTimeAcceleration: "number", stopServerWhenGameCloses: "bool", autoWorkshopMods: "bool",
-  moddedVehicles: "bool", enableMinimap: "bool", disable3rdPerson: "bool", disableCrosshair: "bool", verifySignatures: "bool",
+  moddedVehicles: "bool", enableMinimap: "bool", disable3rdPerson: "bool", disableCrosshair: "bool", useBattlEye: "bool", verifySignatures: "bool",
 };
 const LAUNCHER_DEFAULTS = {
-  stopServerWhenGameCloses: true, moddedVehicles: true, autoWorkshopMods: true, verifySignatures: true,
+  stopServerWhenGameCloses: true, moddedVehicles: true, autoWorkshopMods: true, useBattlEye: true, verifySignatures: true,
   lootMultiplier: 1, serverTimeAcceleration: 1, serverNightTimeAcceleration: 1, map: "chernarusplus", playerName: "Survivor",
 };
 
