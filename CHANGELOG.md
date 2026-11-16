@@ -2,6 +2,12 @@
 
 Each `## version` section becomes the release notes the app shows under "What's new".
 
+## 1.1.4
+
+- Logs tab: the game's own logs are there too: "Game (.RPT)", "Game script log" and "Game
+  crash log" (the newest files in %LocalAppData%\DayZ). When the game crashes, the server only
+  sees "Ticket has been canceled"; the reason is in the game crash log.
+
 ## 1.1.3
 
 - BattlEye is back on, and the "Use BattlEye" option is gone. The DayZ server runs BattlEye

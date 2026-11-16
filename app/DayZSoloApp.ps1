@@ -620,8 +620,19 @@ function Read-LogTail([string]$Path, [long]$From) {
     }
 }
 
+# The game writes its own logs (and crash_*.log when it crashes) to %LocalAppData%\DayZ.
+$GAME_LOG_FILTERS = @{ game = 'DayZ_x64*.RPT'; gamescript = 'script*.log'; crash = 'crash*.log' }
+
 function Get-LogPath([string]$Source) {
     if ($Source -eq 'launcher') { return $LAUNCHER_LOG }
+    if ($GAME_LOG_FILTERS.ContainsKey($Source)) {
+        $gameLogs = Join-Path $env:LOCALAPPDATA 'DayZ'
+        if (-not (Test-Path -LiteralPath $gameLogs)) { return $null }
+        $newest = Get-ChildItem -LiteralPath $gameLogs -Filter $GAME_LOG_FILTERS[$Source] -File -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTime -Descending | Select-Object -First 1
+        if ($newest) { return $newest.FullName }
+        return $null
+    }
     $profiles = Get-ProfilesDir
     if (-not $profiles -or -not (Test-Path -LiteralPath $profiles)) { return $null }
     $filter = if ($Source -eq 'script') { 'script*.log' } else { '*.RPT' }
@@ -728,7 +739,7 @@ function Invoke-Api($Context, [string]$Path, [string]$Method) {
         }
         '/api/log' {
             $source = [string]$query['source']
-            if (@('launcher', 'server', 'script') -notcontains $source) { $source = 'launcher' }
+            if (@('launcher', 'server', 'script', 'game', 'gamescript', 'crash') -notcontains $source) { $source = 'launcher' }
             $from = [long]-1
             if ($query['from']) { $from = [long]$query['from'] }
             $path = Get-LogPath $source
