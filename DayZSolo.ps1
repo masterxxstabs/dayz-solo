@@ -79,6 +79,7 @@ $PROFILES_DIR_NAME = 'profiles_solo'
 $BATTLEYE_DISABLED_NAME = 'battleye.disabled-by-dayzsolo'
 $SERVER_READY_LOG_LINE = 'Player connect enabled'
 $SERVER_READY_MIN_TIMEOUT_SECONDS = 900
+$SERVER_LOG_NOISE = "Unknown object class|No components in|PerfWarning|DamageSystem Warning|Initializing ragdoll|Fresnel n must|missing geometry components|slopelandcontact|Warning Message: (No entry|Size:)"
 $LOOT_SNAPSHOT_SUFFIX = '.dayzsolo-unscaled'
 $LOOT_VARIETY_EXTRA = 40
 $CREATED_FILE_SUFFIX = '.dayzsolo-created'
@@ -2192,6 +2193,34 @@ function Read-ServerLogPart($State, [string]$ProfilesDir, [datetime]$Since) {
     catch { return '' }
 }
 
+function Format-ExitCode([int]$Code) {
+    $hex = '0x{0:X8}' -f $Code
+    $meaning = switch ($hex) {
+        '0xC0000005' { 'it crashed (access violation, usually a mod)' }
+        '0xC0000409' { 'it crashed (stack buffer overrun, usually a mod)' }
+        '0xC00000FD' { 'it crashed (stack overflow, usually a mod script)' }
+        '0xC0000017' { 'it ran out of memory' }
+        default { "exit code $Code" }
+    }
+    return "$meaning, $hex"
+}
+
+# What the server was doing when it died: the end of its .RPT without the harmless model noise,
+# and the crash report DayZ writes next to it.
+function Write-ServerCrashDetails([string]$ProfilesDir, [datetime]$Since, [string]$LogTail) {
+    $lines = @($LogTail -split '\r?\n' | Where-Object { $_.Trim() -and $_ -notmatch $SERVER_LOG_NOISE })
+    if ($lines.Count) {
+        Write-Warn 'Last lines of the server log before it stopped:'
+        foreach ($line in ($lines | Select-Object -Last 20)) { Write-Info "  $line" }
+    }
+    $crash = Get-ChildItem -LiteralPath $ProfilesDir -Filter 'crash*.log' -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.LastWriteTime -ge $Since.AddSeconds(-5) } | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    if ($crash) {
+        Write-Warn "The server's crash report ($($crash.Name)):"
+        foreach ($line in (Get-Content -LiteralPath $crash.FullName -ErrorAction SilentlyContinue | Where-Object { $_.Trim() } | Select-Object -First 30)) { Write-Info "  $line" }
+    }
+}
+
 # The port opens long before the server takes players; with many mods it can load for minutes,
 # and a game that connects early is dropped back to the menu. 'Player connect enabled' in the
 # server log is the real signal; without a log the old port check is used.
@@ -2204,14 +2233,19 @@ function Wait-ServerReady($Process, [int]$Port, [int]$TimeoutSeconds, [int]$Extr
     $nextNote = (Get-Date).AddSeconds(30)
     Write-Info 'Waiting for the server to load the map and mods (a few minutes with many mods)...'
     while ((Get-Date) -lt $deadline) {
-        if ($Process.HasExited) { throw "The server exited during startup (code $($Process.ExitCode)). Check the .RPT log in the profiles folder." }
         $tail = ($tail + (Read-ServerLogPart $logState $ProfilesDir $Started))
+        if ($Process.HasExited) {
+            Start-Sleep -Seconds 2
+            $tail = ($tail + (Read-ServerLogPart $logState $ProfilesDir $Started))
+            Write-ServerCrashDetails $ProfilesDir $Started $tail
+            throw "The server stopped while loading: $(Format-ExitCode $Process.ExitCode). Its log is under Logs > Server (.RPT)."
+        }
         if ($tail.Contains($SERVER_READY_LOG_LINE)) {
             Write-Info "The server takes players after $([int]((Get-Date) - $Started).TotalSeconds) s."
             Start-Sleep -Seconds $ExtraWaitSeconds
             return
         }
-        if ($tail.Length -gt 4096) { $tail = $tail.Substring($tail.Length - 4096) }
+        if ($tail.Length -gt 65536) { $tail = $tail.Substring($tail.Length - 65536) }
         if (Test-UdpPortBound $Port) {
             if (-not $portOpenSince) { $portOpenSince = Get-Date }
             if (-not $logState.Path -and ((Get-Date) - $portOpenSince).TotalSeconds -ge 60) {

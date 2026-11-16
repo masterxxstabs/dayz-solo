@@ -108,6 +108,10 @@ $second = Read-ServerLogPart $state $profiles $since
 if ($first -match 'Loading mods' -and $first -notmatch 'connect' -and $second -match 'Player connect enabled' -and $second -notmatch 'Loading') { Pass 'server log read in parts' } else { Fail "server log parts: '$first' / '$second'" }
 if ((Read-ServerLogPart $state $profiles $since) -eq '') { Pass 'nothing new, nothing read' } else { Fail 'read the same part twice' }
 
+# Exit codes in words
+if ((Format-ExitCode -1073741819) -match 'access violation' -and (Format-ExitCode -1073741819) -match '0xC0000005') { Pass 'crash exit code explained' } else { Fail "exit code: $(Format-ExitCode -1073741819)" }
+if (("12:00 Unknown object class 'pond'" -match $SERVER_LOG_NOISE) -and -not ('12:00 SCRIPT (E): NULL pointer' -match $SERVER_LOG_NOISE)) { Pass 'model noise filtered, errors kept' } else { Fail 'noise filter' }
+
 # No Workshop folders at all must not crash
 try {
     $none = @(Get-WorkshopMods @())

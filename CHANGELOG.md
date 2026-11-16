@@ -2,6 +2,13 @@
 
 Each `## version` section becomes the release notes the app shows under "What's new".
 
+## 1.1.8
+
+- When the server stops while loading, the launcher log now says why in words (for example
+  "it crashed (access violation, usually a mod)") and shows the last lines of the server log
+  and the server's crash report, instead of only an exit code.
+- Logs tab: "Server crash log" (the newest crash_*.log in the server profile).
+
 ## 1.1.7
 
 - Fixed "can't join" with many mods: the game was started as soon as the server opened its

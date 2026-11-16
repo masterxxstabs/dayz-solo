@@ -635,7 +635,7 @@ function Get-LogPath([string]$Source) {
     }
     $profiles = Get-ProfilesDir
     if (-not $profiles -or -not (Test-Path -LiteralPath $profiles)) { return $null }
-    $filter = if ($Source -eq 'script') { 'script*.log' } else { '*.RPT' }
+    $filter = switch ($Source) { 'script' { 'script*.log' } 'servercrash' { 'crash*.log' } default { '*.RPT' } }
     $newest = Get-ChildItem -LiteralPath $profiles -Filter $filter -File -ErrorAction SilentlyContinue |
         Sort-Object LastWriteTime -Descending | Select-Object -First 1
     if ($newest) { return $newest.FullName }
@@ -739,7 +739,7 @@ function Invoke-Api($Context, [string]$Path, [string]$Method) {
         }
         '/api/log' {
             $source = [string]$query['source']
-            if (@('launcher', 'server', 'script', 'game', 'gamescript', 'crash') -notcontains $source) { $source = 'launcher' }
+            if (@('launcher', 'server', 'script', 'servercrash', 'game', 'gamescript', 'crash') -notcontains $source) { $source = 'launcher' }
             $from = [long]-1
             if ($query['from']) { $from = [long]$query['from'] }
             $path = Get-LogPath $source
