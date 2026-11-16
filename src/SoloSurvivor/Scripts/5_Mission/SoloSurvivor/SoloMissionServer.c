@@ -7,6 +7,7 @@ modded class MissionServer
 	protected ref SoloSurvivorSettings m_SoloSettings;
 	protected ref map<string, PlayerBase> m_SoloProtectedPlayers;
 	protected ref SoloEventManager m_SoloEvents;
+	protected ref SoloDayCounter m_SoloDays;
 
 	override void OnInit()
 	{
@@ -25,6 +26,12 @@ modded class MissionServer
 		{
 			SoloKeepDaytime();
 			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SoloKeepDaytime, 30000, true);
+		}
+
+		if (m_SoloSettings.ShowDayCounter)
+		{
+			m_SoloDays = new SoloDayCounter();
+			GetGame().GetCallQueue(CALL_CATEGORY_GAMEPLAY).CallLater(m_SoloDays.Tick, 10000, true);
 		}
 
 		SoloWriteTerrain();
@@ -297,6 +304,8 @@ modded class MissionServer
 			pos[1] = GetGame().SurfaceY(pos[0], pos[2]);
 		}
 		PlayerBase newPlayer = super.OnClientNewEvent(identity, pos, ctx);
+		if (m_SoloDays && identity)
+			m_SoloDays.ResetPlayer(identity.GetId());
 		if (newPlayer && m_SoloSettings)
 		{
 			foreach (string itemType : m_SoloSettings.ExtraStartingItems)
@@ -322,6 +331,8 @@ modded class MissionServer
 		super.PlayerDisconnected(player, identity, uid);
 		if (m_SoloProtectedPlayers)
 			m_SoloProtectedPlayers.Remove(uid);
+		if (m_SoloDays)
+			m_SoloDays.ForgetClock(uid);
 		if (m_SoloSettings && m_SoloSettings.ShutdownServerWhenEmpty)
 			GetGame().GetCallQueue(CALL_CATEGORY_SYSTEM).CallLater(SoloShutdownIfEmpty, m_SoloSettings.ShutdownDelaySeconds * 1000, false);
 	}

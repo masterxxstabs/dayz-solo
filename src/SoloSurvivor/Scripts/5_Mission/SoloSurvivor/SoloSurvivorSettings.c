@@ -14,6 +14,7 @@ class SoloSurvivorSettings
 	ref array<string> ExtraStartingItems;
 	string WelcomeMessage;
 	bool AlwaysDay;
+	bool ShowDayCounter;
 	int DayStartHour;
 	int DayEndHour;
 	ref array<ref SoloSafeZone> SafeZones;
@@ -28,6 +29,7 @@ class SoloSurvivorSettings
 		ExtraStartingItems = new array<string>;
 		WelcomeMessage = "This world is yours alone. Good luck, survivor.";
 		AlwaysDay = false;
+		ShowDayCounter = true;
 		DayStartHour = 7;
 		DayEndHour = 19;
 		SafeZones = new array<ref SoloSafeZone>;

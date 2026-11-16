@@ -27,12 +27,12 @@ class CfgMods
 			class gameScriptModule
 			{
 				value = "";
-				files[] = {"SoloShop/Scripts/3_Game", "SoloMinimap/Scripts/3_Game"};
+				files[] = {"SoloSurvivor/Scripts/3_Game", "SoloShop/Scripts/3_Game", "SoloMinimap/Scripts/3_Game"};
 			};
 			class worldScriptModule
 			{
 				value = "";
-				files[] = {"SoloShop/Scripts/4_World", "SoloMinimap/Scripts/4_World"};
+				files[] = {"SoloSurvivor/Scripts/4_World", "SoloShop/Scripts/4_World", "SoloMinimap/Scripts/4_World"};
 			};
 			class missionScriptModule
 			{

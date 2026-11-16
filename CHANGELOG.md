@@ -2,6 +2,16 @@
 
 Each `## version` section becomes the release notes the app shows under "What's new".
 
+## 1.2.0
+
+- Days survived on screen: a "Day N" counter in the top-left corner while you play. It counts
+  in-game time your character has stayed alive (fast nights and sleeping count too) and starts
+  over at Day 1 when you die. Settings > "Show the days survived on screen" turns it off. It's
+  kept in the server profile (SoloSurvivor\days.json), not in the world save, so it can't break
+  your world.
+- Night is back by default for new installs ("Always daytime" now starts off). If you had it
+  on, untick it in Settings.
+
 ## 1.1.9
 
 - Tools: "Start a fresh world". It moves your world save (storage_1) aside as a backup, so the

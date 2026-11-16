@@ -9,7 +9,8 @@
     ],
     "ExtraStartingItems": [],
     "WelcomeMessage": "This world is yours alone. Good luck, survivor.",
-    "AlwaysDay": true,
+    "AlwaysDay": false,
+    "ShowDayCounter": true,
     "DayStartHour": 7,
     "DayEndHour": 19,
     "SafeZones": [

@@ -1,0 +1,37 @@
+FrameWidgetClass SoloDaysRoot {
+ ignorepointer 1
+ position 20 20
+ size 130 34
+ hexactpos 1
+ vexactpos 1
+ hexactsize 1
+ vexactsize 1
+ priority 1
+ {
+  PanelWidgetClass SoloDaysBackground {
+   ignorepointer 1
+   position 0 0
+   size 1 1
+   hexactpos 1
+   vexactpos 1
+   hexactsize 0
+   vexactsize 0
+   color 0 0 0 0.45
+   style rover_sim_colorable
+  }
+  TextWidgetClass DayText {
+   ignorepointer 1
+   position 0 0
+   size 1 1
+   hexactpos 1
+   vexactpos 1
+   hexactsize 0
+   vexactsize 0
+   color 1 1 1 0.95
+   text "Day 1"
+   font "gui/fonts/metron28"
+   "text halign" center
+   "text valign" center
+  }
+ }
+}

@@ -629,6 +629,7 @@
         <label class="check"><input id="s-foodNoRot" type="checkbox"> Food never rots</label>
 
         <label class="check"><input id="s-AlwaysDay" type="checkbox"> Always daytime (07:00-19:00)</label>
+        <label class="check"><input id="s-ShowDayCounter" type="checkbox"> Show the days survived on screen</label>
         <label class="check"><input id="s-autoWorkshopMods" type="checkbox"> Load all subscribed Workshop mods</label>
         <label class="check"><input id="s-modUpdates" type="checkbox"> Update Workshop mods before every launch and join (Steam downloads new versions first, like DZSA)</label>
         <label class="check"><input id="s-moddedVehicles" type="checkbox"> Add modded cars to the car spawns</label>
@@ -2412,6 +2413,7 @@ async function loadSettings() {
     $("s-ExtraStartingItems").value = (s.ExtraStartingItems || []).join(", ");
     $("s-UseFixedSpawn").checked = !!s.UseFixedSpawn;
     $("s-AlwaysDay").checked = !!s.AlwaysDay;
+    $("s-ShowDayCounter").checked = s.ShowDayCounter !== false;
     const gas = l.gasZones === false ? "off" : l.gasZones === true || l.gasZones == null ? "default" : String(l.gasZones);
     $("s-gasMode").value = ["random", "off", "default"].includes(gas) ? gas : "default";
     const coop = l.coop || {};
@@ -2465,6 +2467,7 @@ function collectSettings(l, s) {
   s.ExtraStartingItems = $("s-ExtraStartingItems").value.split(",").map((x) => x.trim()).filter(Boolean);
   s.UseFixedSpawn = $("s-UseFixedSpawn").checked;
   s.AlwaysDay = $("s-AlwaysDay").checked;
+  s.ShowDayCounter = $("s-ShowDayCounter").checked;
   l.gasZones = $("s-gasMode").value;
   let coopPassword = $("c-password").value.replace(/[^A-Za-z0-9_-]/g, "").slice(0, 32);
   if (coopPassword.length > 0 && coopPassword.length < 4) coopPassword = (l.coop && l.coop.password) || "";
